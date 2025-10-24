@@ -5,8 +5,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# REMOVER GUNICORN SE EXISTIR
+RUN pip uninstall -y gunicorn || true
+
 COPY . .
 
-EXPOSE 8080
+# FORÇAR A PORTA 8080 NO FLASK
+ENV PORT=8080
 
-CMD ["python", "app.py"]
+# COMANDO QUE SUBSTITUI O GUNICORN
+CMD ["python", "-c", "from app import app; import os; app.run(host='0.0.0.0', port=8080, debug=False)"]
