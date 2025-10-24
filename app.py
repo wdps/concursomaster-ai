@@ -4,6 +4,8 @@ import sqlalchemy as db
 import os
 from datetime import datetime
 import logging
+import csv
+import io
 
 app = Flask(__name__)
 CORS(app)
@@ -39,8 +41,69 @@ def health_check():
         "timestamp": datetime.now().isoformat()
     })
 
-@app.route("/questoes/<materia>")
-def get_questoes(materia):
+# ROTA PARA IMPORTAR QUESTÕES - COM NOMES CORRETOS
+@app.route("/importar-questoes", methods=["POST"])
+def importar_questoes():
+    if not engine:
+        return jsonify({"error": "Banco indisponível"}), 500
+    
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "Nenhum arquivo enviado"}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "Nome de arquivo vazio"}), 400
+        
+        if file and file.filename.endswith('.csv'):
+            # Ler CSV
+            stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+            csv_input = csv.DictReader(stream, delimiter=';')
+            
+            questões_table = metadata.tables['questoes']
+            questões = []
+            
+            for row in csv_input:
+                questao = {
+                    'disciplina': row.get('disciplina', 'geral'),
+                    'assunto': row.get('assunto', ''),
+                    'enunciado': row.get('enunciado', ''),
+                    'alt_a': row.get('alt_a', ''),
+                    'alt_b': row.get('alt_b', ''),
+                    'alt_c': row.get('alt_c', ''),
+                    'alt_d': row.get('alt_d', ''),
+                    'gabarito': row.get('gabarito', '').upper(),
+                    'just_a': row.get('just_a', ''),
+                    'just_b': row.get('just_b', ''),
+                    'just_c': row.get('just_c', ''),
+                    'just_d': row.get('just_d', ''),
+                    'dica_interpretacao': row.get('dica_interpretacao', ''),
+                    'formula_aplicavel': row.get('formula_aplicavel', ''),
+                    'nivel': row.get('dificuldade', 'Médio'),
+                    'data_criacao': datetime.now().isoformat(),
+                    'ativo': True
+                }
+                questões.append(questao)
+            
+            # Inserir no banco
+            with engine.connect() as conn:
+                conn.execute(questões_table.insert(), questões)
+                conn.commit()
+            
+            return jsonify({
+                "message": f"✅ {len(questões)} questões importadas com sucesso!",
+                "quantidade": len(questões),
+                "materias_importadas": list(set([q['disciplina'] for q in questões]))
+            })
+        else:
+            return jsonify({"error": "Arquivo deve ser CSV"}), 400
+            
+    except Exception as e:
+        return jsonify({"error": f"Erro na importação: {str(e)}"}), 500
+
+# ATUALIZAR ROTAS PARA USAR OS NOMES CORRETOS
+@app.route("/questoes/<disciplina>")
+def get_questoes(disciplina):
     if not engine:
         return jsonify({"error": "Banco indisponível"}), 500
     
@@ -49,13 +112,32 @@ def get_questoes(materia):
         with engine.connect() as conn:
             questoes_table = metadata.tables['questoes']
             query = db.select(questoes_table).where(
-                questoes_table.c.materia == materia
+                questoes_table.c.disciplina == disciplina
             ).limit(limit)
             result = conn.execute(query)
-            questões = [dict(row._mapping) for row in result]
+            
+            # Converter para formato padronizado
+            questões = []
+            for row in result:
+                questao_dict = dict(row._mapping)
+                # Formatar para o frontend
+                questao_formatada = {
+                    'id': questao_dict.get('id'),
+                    'materia': questao_dict.get('disciplina'),
+                    'assunto': questao_dict.get('assunto'),
+                    'enunciado': questao_dict.get('enunciado'),
+                    'alternativa_a': questao_dict.get('alt_a'),
+                    'alternativa_b': questao_dict.get('alt_b'),
+                    'alternativa_c': questao_dict.get('alt_c'),
+                    'alternativa_d': questao_dict.get('alt_d'),
+                    'alternativa_e': '',
+                    'resposta_correta': questao_dict.get('gabarito'),
+                    'explicacao': f"Dificuldade: {questao_dict.get('nivel', 'N/A')}. {questao_dict.get('dica_interpretacao', '')}"
+                }
+                questões.append(questao_formatada)
             
             return jsonify({
-                "materia": materia,
+                "disciplina": disciplina,
                 "quantidade": len(questões),
                 "questoes": questões
             })
@@ -75,17 +157,17 @@ def dashboard_data():
             total_query = db.select([db.func.count()]).select_from(questoes_table)
             total_questoes = conn.execute(total_query).scalar()
             
-            # Questões por matéria
-            materias_query = db.select([
-                questoes_table.c.materia, 
+            # Questões por disciplina
+            disciplinas_query = db.select([
+                questoes_table.c.disciplina, 
                 db.func.count()
-            ]).group_by(questoes_table.c.materia)
-            materias_result = conn.execute(materias_query)
-            materias_count = {row[0]: row[1] for row in materias_result}
+            ]).group_by(questoes_table.c.disciplina)
+            disciplinas_result = conn.execute(disciplinas_query)
+            disciplinas_count = {row[0]: row[1] for row in disciplinas_result}
             
             return jsonify({
                 "total_questoes": total_questoes,
-                "questoes_por_materia": materias_count,
+                "questoes_por_materia": disciplinas_count,
                 "timestamp": datetime.now().isoformat()
             })
     except Exception as e:
@@ -99,7 +181,7 @@ def get_materias():
     try:
         with engine.connect() as conn:
             questoes_table = metadata.tables['questoes']
-            query = db.select([questoes_table.c.materia]).distinct()
+            query = db.select([questoes_table.c.disciplina]).distinct()
             result = conn.execute(query)
             materias = [row[0] for row in result]
             return jsonify({"materias": materias})
