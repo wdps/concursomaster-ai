@@ -1,10 +1,19 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import sqlalchemy as db
 import os
 
 app = Flask(__name__)
 CORS(app)
+
+# Servir arquivos estáticos (HTML, CSS, JS)
+@app.route("/")
+def serve_index():
+    return send_from_directory(".", "index.html")
+
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory(".", path)
 
 # Conexão com banco
 def conectar_banco():
@@ -20,15 +29,8 @@ def conectar_banco():
 
 engine, metadata = conectar_banco()
 
-@app.route("/")
-def home():
-    return jsonify({
-        "message": "ConcursoMaster AI Premium - ONLINE",
-        "version": "2.0",
-        "status": "success"
-    })
-
-@app.route("/health")
+# API Routes
+@app.route("/api/health")
 def health():
     db_status = "connected" if engine else "disconnected"
     return jsonify({
@@ -36,7 +38,7 @@ def health():
         "database": db_status
     })
 
-@app.route("/materias")
+@app.route("/api/materias")
 def materias():
     if not engine:
         return jsonify({"materias": []})
@@ -51,7 +53,7 @@ def materias():
     except Exception as e:
         return jsonify({"materias": [], "error": str(e)})
 
-@app.route("/dashboard-data")
+@app.route("/api/dashboard-data")
 def dashboard():
     if not engine:
         return jsonify({"error": "Banco indisponível"})
@@ -75,7 +77,7 @@ def dashboard():
     except Exception as e:
         return jsonify({"error": str(e)})
 
-@app.route("/questoes/<disciplina>")
+@app.route("/api/questoes/<disciplina>")
 def questao(disciplina):
     if not engine:
         return jsonify({"error": "Banco indisponível"})
