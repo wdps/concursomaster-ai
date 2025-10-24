@@ -13,143 +13,23 @@ import logging
 from math import ceil
 import re
 
-# --- CONFIGURAÇÃO DO GOOGLE GEMINI AI ---
-try:
-    import google.generativeai as genai
-    from dotenv import load_dotenv
-    load_dotenv()
-    GEMINI_AVAILABLE = True
-except ImportError:
-    GEMINI_AVAILABLE = False
+# Configuração simplificada para deploy
+GEMINI_AVAILABLE = False
 
-# --- CONFIGURAÇÕES GERAIS ---
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Configuração simplificada para deploy
+GEMINI_AVAILABLE = False
 
-DB_NAME = 'concurso.db'
-TB_QUESTOES = 'questoes'
-TB_ESTATISTICAS = 'estatisticas'
-TB_SIMULADOS_FEITOS = 'simulados_feitos'
-NOME_USUARIO_RANKING = "Wanderson de Paula"
-
-# --- PESOS DAS DISCIPLINAS ---
-SIMULADO_PESOS_PONTUACAO = {
-    "Língua Portuguesa": 1.5,
-    "Matemática": 1.0,
-    "Raciocínio Lógico": 1.0, 
-    "Direito Administrativo": 2.0,
-    "Direito Constitucional": 2.0,
-    "Psicologia": 1.0,
-    "Atualidades": 1.0,
-    "Conhecimentos Bancários": 1.5,
-    "Informática": 1.0,
-    "Matemática Financeira": 1.0,
-    "Vendas e Negociação": 1.0,
-    "Português e Redação Oficial": 1.5,
-    "Legislação": 2.0,
-    "Geral": 1.0 
-}
-
-SIMULADO_DISTRIBUTION_PERCENT = {
-    "Língua Portuguesa": 0.25, 
-    "Matemática": 0.10,
-    "Raciocínio Lógico": 0.05, 
-    "Direito Administrativo": 0.10,
-    "Direito Constitucional": 0.10,
-    "Informática": 0.05,
-    "Conhecimentos Bancários": 0.05,
-    "Matemática Financeira": 0.05,
-    "Vendas e Negociação": 0.05,
-    "Psicologia": 0.05,
-    "Atualidades": 0.05,
-}
-
-# --- MODELOS PYDANTIC ---
-class RedacaoRequest(BaseModel):
-    texto: str
-    tema: str
-    tipo_prova: str = "dissertativa"
-    palavras_chave: Optional[List[str]] = []
-
-class QuestaoResponse(BaseModel):
-    id: int
-    disciplina: str
-    assunto: str
-    enunciado: str
-    alt_a: str
-    alt_b: str
-    alt_c: str
-    alt_d: str
-    gabarito: str
-    just_a: str
-    just_b: str
-    just_c: str
-    just_d: str
-    dica_interpretacao: str
-    formula_aplicavel: str
-    nivel: str
-    peso_pontuacao: float
-    total_questoes_geral: int
-
-class RespostaRequest(BaseModel):
-    questao_id: int
-    alternativa_escolhida: str
-    tempo_resposta: Optional[int] = 0
-
-class HistoricoRequest(BaseModel):
-    total_questoes: int
-    acertos: int
-    pontuacao_final: float
-    duracao_segundos: int
-
-class EstatisticaDisciplina(BaseModel):
-    disciplina: str
-    acertos: int
-    erros: int
-    total_respondidas: int
-    score_total: float
-    score_medio_ponderado: float
-    aproveitamento_nominal: float
-
-# --- SISTEMA DE CACHE MELHORADO ---
-class QuestaoCache:
-    def __init__(self, max_size=1000):
-        self.cache = {}
-        self.max_size = max_size
-        self.lock = asyncio.Lock()
-        self.access_times = {}
-    
-    async def get(self, questao_id: int):
-        async with self.lock:
-            if questao_id in self.cache:
-                self.access_times[questao_id] = time.time()
-                return self.cache[questao_id]
-            return None
-    
-    async def set(self, questao_id: int, data):
-        async with self.lock:
-            if len(self.cache) >= self.max_size:
-                # Remove o menos acessado recentemente
-                oldest_id = min(self.access_times.keys(), key=lambda k: self.access_times[k])
-                del self.cache[oldest_id]
-                del self.access_times[oldest_id]
-            
-            self.cache[questao_id] = data
-            self.access_times[questao_id] = time.time()
-
-questao_cache = QuestaoCache()
-
-# --- CONFIGURAÇÃO DO GEMINI AI ---
+# --- CONFIGURAÃ‡ÃƒO DO GEMINI AI ---
 def configurar_gemini():
     global GEMINI_AVAILABLE
     if not GEMINI_AVAILABLE:
-        logger.warning("❌ Google Generative AI não disponível")
+        logger.warning("âŒ Google Generative AI nÃ£o disponÃ­vel")
         return
         
     try:
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         if not GEMINI_API_KEY:
-            logger.warning("❌ GEMINI_API_KEY não encontrada")
+            logger.warning("âŒ GEMINI_API_KEY nÃ£o encontrada")
             GEMINI_AVAILABLE = False
             return
             
@@ -159,20 +39,20 @@ def configurar_gemini():
         GEMINI_AVAILABLE = modelo_encontrado
         
         if GEMINI_AVAILABLE:
-            logger.info("✅ Google Gemini AI configurado com sucesso")
+            logger.info("âœ… Google Gemini AI configurado com sucesso")
         else:
-            logger.warning("❌ Modelo Gemini Pro não disponível")
+            logger.warning("âŒ Modelo Gemini Pro nÃ£o disponÃ­vel")
             
     except Exception as e:
-        logger.error(f"❌ Erro na configuração do Gemini: {e}")
+        logger.error(f"âŒ Erro na configuraÃ§Ã£o do Gemini: {e}")
         GEMINI_AVAILABLE = False
 
-# --- CONFIGURAÇÃO DO FASTAPI ---
+# --- CONFIGURAÃ‡ÃƒO DO FASTAPI ---
 global_state = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("🚀 ConcursoMaster AI Premium - Inicializando...")
+    logger.info("ðŸš€ ConcursoMaster AI Premium - Inicializando...")
     
     configurar_gemini()
     
@@ -180,8 +60,8 @@ async def lifespan(app: FastAPI):
     global_state["all_ids_by_discipline"] = {}
     
     if not os.path.exists(DB_NAME):
-        logger.error(f"❌ ERRO: Banco '{DB_NAME}' não encontrado.")
-        logger.info("💡 Execute primeiro: python criar_banco.py")
+        logger.error(f"âŒ ERRO: Banco '{DB_NAME}' nÃ£o encontrado.")
+        logger.info("ðŸ’¡ Execute primeiro: python criar_banco.py")
         exit()
         
     engine = db.create_engine(f'sqlite:///{DB_NAME}')
@@ -209,20 +89,30 @@ async def lifespan(app: FastAPI):
 
             global_state["total_questoes"] = total_questoes_geral
             
-        logger.info(f"✅ Sistema carregado: {global_state['total_questoes']} questões em {len(disciplines)} disciplinas")
+        logger.info(f"âœ… Sistema carregado: {global_state['total_questoes']} questÃµes em {len(disciplines)} disciplinas")
         
     except Exception as e:
-        logger.error(f"❌ Erro na inicialização: {e}")
+        logger.error(f"âŒ Erro na inicializaÃ§Ã£o: {e}")
         exit()
     
     yield 
 
-    logger.info("🔴 ConcursoMaster AI - Finalizando...")
+    logger.info("ðŸ”´ ConcursoMaster AI - Finalizando...")
     global_state["engine"].dispose()
+
+
+
+# Configuração simplificada para deploy
+GEMINI_AVAILABLE = False
+
+
+
+# Configuração simplificada para deploy
+GEMINI_AVAILABLE = False
 
 app = FastAPI(
     title="ConcursoMaster AI API",
-    description="API Premium para sistema de estudos de concursos públicos",
+    description="API Premium para sistema de estudos de concursos pÃºblicos",
     version="2.0.0",
     lifespan=lifespan
 )
@@ -235,9 +125,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- FUNÇÕES AUXILIARES ---
+# --- FUNÃ‡Ã•ES AUXILIARES ---
 async def get_questao_com_cache(questao_id: int):
-    """Obtém questão com sistema de cache melhorado"""
+    """ObtÃ©m questÃ£o com sistema de cache melhorado"""
     cached = await questao_cache.get(questao_id)
     if cached:
         return cached
@@ -255,26 +145,26 @@ async def get_questao_com_cache(questao_id: int):
         return result
 
 def validar_redacao_sentido(texto: str):
-    """Valida se a redação tem conteúdo significativo"""
+    """Valida se a redaÃ§Ã£o tem conteÃºdo significativo"""
     palavras = texto.strip().split()
     
     if len(palavras) < 100:
-        return {"valido": False, "erro": "Redação muito curta. Mínimo 100 palavras."}
+        return {"valido": False, "erro": "RedaÃ§Ã£o muito curta. MÃ­nimo 100 palavras."}
     
     palavras_unicas = set(palavras)
     taxa_repeticao = len(palavras_unicas) / len(palavras)
     
     if taxa_repeticao < 0.3:
-        return {"valido": False, "erro": "Texto com repetição excessiva."}
+        return {"valido": False, "erro": "Texto com repetiÃ§Ã£o excessiva."}
     
     paragrafos = [p.strip() for p in texto.split('\n\n') if p.strip()]
     if len(paragrafos) < 3:
-        return {"valido": False, "erro": "Estrutura insuficiente (mínimo 3 parágrafos)."}
+        return {"valido": False, "erro": "Estrutura insuficiente (mÃ­nimo 3 parÃ¡grafos)."}
     
     return {"valido": True}
 
 def selecionar_questoes_simulado(quantidade: int, disciplinas_filtro: List[str] = None):
-    """Seleciona questões para simulado com filtro opcional"""
+    """Seleciona questÃµes para simulado com filtro opcional"""
     simulado_list = []
     total_ids_disponiveis = global_state.get("all_ids_by_discipline", {})
     
@@ -296,7 +186,7 @@ def selecionar_questoes_simulado(quantidade: int, disciplinas_filtro: List[str] 
                 selected_ids = all_ids[:min(qtd, len(all_ids))] 
                 simulado_list.extend(selected_ids)
     else:
-        # Distribuição padrão por porcentagem
+        # DistribuiÃ§Ã£o padrÃ£o por porcentagem
         for disc, percent in SIMULADO_DISTRIBUTION_PERCENT.items():
             qtd_necessaria = ceil(quantidade * percent)
             all_ids = total_ids_disponiveis.get(disc, [])
@@ -306,7 +196,7 @@ def selecionar_questoes_simulado(quantidade: int, disciplinas_filtro: List[str] 
                 selected_ids = all_ids[:min(qtd_necessaria, len(all_ids))] 
                 simulado_list.extend(selected_ids)
 
-    # Preencher com questões restantes se necessário
+    # Preencher com questÃµes restantes se necessÃ¡rio
     if len(simulado_list) < quantidade:
         all_db_ids = [item for sublist in total_ids_disponiveis.values() for item in sublist]
         remaining_pool = list(set(all_db_ids) - set(simulado_list))
@@ -319,43 +209,43 @@ def selecionar_questoes_simulado(quantidade: int, disciplinas_filtro: List[str] 
     random.shuffle(simulado_list)
     return simulado_list[:quantidade]
 
-# --- FUNÇÕES DO GEMINI AI ---
+# --- FUNÃ‡Ã•ES DO GEMINI AI ---
 async def corrigir_redacao_com_gemini(redacao: RedacaoRequest):
-    """Correção de redação usando Google Gemini AI"""
+    """CorreÃ§Ã£o de redaÃ§Ã£o usando Google Gemini AI"""
     try:
         model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""
-        Você é um corretor especializado em redações de concursos públicos brasileiros. 
-        Analise a redação abaixo seguindo RIGOROSAMENTE os critérios do ENEM e concursos públicos.
+        VocÃª Ã© um corretor especializado em redaÃ§Ãµes de concursos pÃºblicos brasileiros. 
+        Analise a redaÃ§Ã£o abaixo seguindo RIGOROSAMENTE os critÃ©rios do ENEM e concursos pÃºblicos.
 
-        **TEMA DA REDAÇÃO**: {redacao.tema}
+        **TEMA DA REDAÃ‡ÃƒO**: {redacao.tema}
         **TIPO DE PROVA**: {redacao.tipo_prova}
 
         **TEXTO DO CANDIDATO**:
         {redacao.texto}
 
-        **CRITÉRIOS DE CORREÇÃO (0-200 pontos cada)**:
-        1. DOMÍNIO DA NORMA CULTA (200 pontos)
-        2. COMPREENSÃO DO TEMA (200 pontos)
-        3. ORGANIZAÇÃO TEXTUAL (200 pontos)
-        4. COESÃO E COERÊNCIA (200 pontos)
-        5. PROPOSTA DE INTERVENÇÃO (200 pontos)
+        **CRITÃ‰RIOS DE CORREÃ‡ÃƒO (0-200 pontos cada)**:
+        1. DOMÃNIO DA NORMA CULTA (200 pontos)
+        2. COMPREENSÃƒO DO TEMA (200 pontos)
+        3. ORGANIZAÃ‡ÃƒO TEXTUAL (200 pontos)
+        4. COESÃƒO E COERÃŠNCIA (200 pontos)
+        5. PROPOSTA DE INTERVENÃ‡ÃƒO (200 pontos)
 
-        Forneça uma análise detalhada em HTML com:
-        - Pontuação total (0-1000 pontos)
-        - Análise individual de cada competência
-        - Sugestões específicas de melhoria
-        - Comentários gerais
+        ForneÃ§a uma anÃ¡lise detalhada em HTML com:
+        - PontuaÃ§Ã£o total (0-1000 pontos)
+        - AnÃ¡lise individual de cada competÃªncia
+        - SugestÃµes especÃ­ficas de melhoria
+        - ComentÃ¡rios gerais
 
-        Use uma linguagem profissional mas acessível, com emojis para melhor visualização.
-        Estruture bem o HTML com classes CSS para formatação.
+        Use uma linguagem profissional mas acessÃ­vel, com emojis para melhor visualizaÃ§Ã£o.
+        Estruture bem o HTML com classes CSS para formataÃ§Ã£o.
         """
         
         response = await model.generate_content_async(prompt)
         
         if response.text:
-            # Extrair pontuação do texto de resposta
+            # Extrair pontuaÃ§Ã£o do texto de resposta
             pontuacao_match = re.search(r'(\d{1,3})\s*/\s*1000', response.text)
             pontuacao_total = int(pontuacao_match.group(1)) if pontuacao_match else 600
             
@@ -369,37 +259,37 @@ async def corrigir_redacao_com_gemini(redacao: RedacaoRequest):
             raise Exception("Resposta vazia do Gemini AI")
             
     except Exception as e:
-        logger.error(f"❌ Erro na correção com Gemini: {e}")
+        logger.error(f"âŒ Erro na correÃ§Ã£o com Gemini: {e}")
         return await corrigir_redacao_simulada(redacao)
 
 async def corrigir_redacao_simulada(redacao: RedacaoRequest):
-    """Correção simulada quando Gemini não está disponível"""
+    """CorreÃ§Ã£o simulada quando Gemini nÃ£o estÃ¡ disponÃ­vel"""
     palavras = len(redacao.texto.split())
     paragrafos = redacao.texto.count('\n\n') + 1
     
-    # Base score com base em métricas textuais
+    # Base score com base em mÃ©tricas textuais
     base_score = min(500 + (palavras // 3) + (paragrafos * 25), 850)
     variacao = random.randint(-50, 100)
     pontuacao_final = min(base_score + variacao, 1000)
     
-    # HTML de correção simulada
+    # HTML de correÃ§Ã£o simulada
     correcao_html = f"""
     <div class="correcao-resultado">
         <div class="pontuacao-total">
-            <h3>📊 Pontuação Final: {pontuacao_final}/1000</h3>
+            <h3>ðŸ“Š PontuaÃ§Ã£o Final: {pontuacao_final}/1000</h3>
         </div>
         
         <div class="competencia-item">
             <div class="competencia-header">
-                <span class="competencia-titulo">Domínio da Norma Culta</span>
+                <span class="competencia-titulo">DomÃ­nio da Norma Culta</span>
                 <span class="competencia-pontos">{(pontuacao_final * 0.18):.0f}/200</span>
             </div>
-            <p class="competencia-descricao">Bom domínio da norma padrão, com poucos desvios.</p>
+            <p class="competencia-descricao">Bom domÃ­nio da norma padrÃ£o, com poucos desvios.</p>
         </div>
         
         <div class="competencia-item">
             <div class="competencia-header">
-                <span class="competencia-titulo">Compreensão do Tema</span>
+                <span class="competencia-titulo">CompreensÃ£o do Tema</span>
                 <span class="competencia-pontos">{(pontuacao_final * 0.20):.0f}/200</span>
             </div>
             <p class="competencia-descricao">Tema compreendido adequadamente.</p>
@@ -407,39 +297,39 @@ async def corrigir_redacao_simulada(redacao: RedacaoRequest):
         
         <div class="competencia-item">
             <div class="competencia-header">
-                <span class="competencia-titulo">Organização Textual</span>
+                <span class="competencia-titulo">OrganizaÃ§Ã£o Textual</span>
                 <span class="competencia-pontos">{(pontuacao_final * 0.20):.0f}/200</span>
             </div>
-            <p class="competencia-descricao">Estrutura adequada com introdução, desenvolvimento e conclusão.</p>
+            <p class="competencia-descricao">Estrutura adequada com introduÃ§Ã£o, desenvolvimento e conclusÃ£o.</p>
         </div>
         
         <div class="competencia-item">
             <div class="competencia-header">
-                <span class="competencia-titulo">Coesão e Coerência</span>
+                <span class="competencia-titulo">CoesÃ£o e CoerÃªncia</span>
                 <span class="competencia-pontos">{(pontuacao_final * 0.21):.0f}/200</span>
             </div>
-            <p class="competencia-descricao">Boa articulação entre as ideias.</p>
+            <p class="competencia-descricao">Boa articulaÃ§Ã£o entre as ideias.</p>
         </div>
         
         <div class="competencia-item">
             <div class="competencia-header">
-                <span class="competencia-titulo">Proposta de Intervenção</span>
+                <span class="competencia-titulo">Proposta de IntervenÃ§Ã£o</span>
                 <span class="competencia-pontos">{(pontuacao_final * 0.21):.0f}/200</span>
             </div>
-            <p class="competencia-descricao">Proposta apresentada de forma clara e viável.</p>
+            <p class="competencia-descricao">Proposta apresentada de forma clara e viÃ¡vel.</p>
         </div>
         
         <div class="sugestoes-melhoria">
-            <strong>💡 Sugestões de Melhoria:</strong>
-            <p>• Desenvolva mais os argumentos com exemplos concretos</p>
-            <p>• Atenção à pontuação e concordância verbal</p>
-            <p>• Enriqueça o vocabulário com sinônimos</p>
-            <p>• Revise a estrutura dos parágrafos</p>
+            <strong>ðŸ’¡ SugestÃµes de Melhoria:</strong>
+            <p>â€¢ Desenvolva mais os argumentos com exemplos concretos</p>
+            <p>â€¢ AtenÃ§Ã£o Ã  pontuaÃ§Ã£o e concordÃ¢ncia verbal</p>
+            <p>â€¢ EnriqueÃ§a o vocabulÃ¡rio com sinÃ´nimos</p>
+            <p>â€¢ Revise a estrutura dos parÃ¡grafos</p>
         </div>
         
         <div class="analise-geral">
-            <strong>📈 Análise Geral:</strong>
-            <p>Redação com bom potencial! Continue praticando para melhorar ainda mais sua performance.</p>
+            <strong>ðŸ“ˆ AnÃ¡lise Geral:</strong>
+            <p>RedaÃ§Ã£o com bom potencial! Continue praticando para melhorar ainda mais sua performance.</p>
         </div>
     </div>
     """
@@ -447,7 +337,7 @@ async def corrigir_redacao_simulada(redacao: RedacaoRequest):
     return {
         "pontuacao_total": pontuacao_final,
         "correcao": correcao_html,
-        "tecnologia": "Sistema de Correção Simulada",
+        "tecnologia": "Sistema de CorreÃ§Ã£o Simulada",
         "timestamp": datetime.now().isoformat()
     }
 
@@ -455,7 +345,7 @@ async def corrigir_redacao_simulada(redacao: RedacaoRequest):
 @app.get("/")
 async def root():
     return {
-        "message": "🚀 ConcursoMaster AI API Premium v2.0",
+        "message": "ðŸš€ ConcursoMaster AI API Premium v2.0",
         "status": "online",
         "version": "2.0.0",
         "gemini_available": GEMINI_AVAILABLE,
@@ -468,7 +358,7 @@ async def health_check():
     """Endpoint de health check"""
     try:
         with global_state["engine"].connect() as conn:
-            # Testar conexão com o banco
+            # Testar conexÃ£o com o banco
             conn.execute(db.text("SELECT 1"))
             
         return {
@@ -482,20 +372,20 @@ async def health_check():
 
 @app.post("/corrigir-redacao")
 async def corrigir_redacao_avancada(redacao: RedacaoRequest):
-    """Correção avançada de redação com validações"""
-    # Validações iniciais
+    """CorreÃ§Ã£o avanÃ§ada de redaÃ§Ã£o com validaÃ§Ãµes"""
+    # ValidaÃ§Ãµes iniciais
     if len(redacao.texto.strip()) < 500:
         raise HTTPException(
             status_code=400, 
-            detail="Texto muito curto. Mínimo 500 caracteres."
+            detail="Texto muito curto. MÃ­nimo 500 caracteres."
         )
     
     validacao = validar_redacao_sentido(redacao.texto)
     if not validacao["valido"]:
         raise HTTPException(status_code=400, detail=validacao["erro"])
     
-    # Registrar tentativa de correção
-    logger.info(f"📝 Correção de redação solicitada - Tema: {redacao.tema}")
+    # Registrar tentativa de correÃ§Ã£o
+    logger.info(f"ðŸ“ CorreÃ§Ã£o de redaÃ§Ã£o solicitada - Tema: {redacao.tema}")
     
     try:
         if GEMINI_AVAILABLE:
@@ -503,26 +393,26 @@ async def corrigir_redacao_avancada(redacao: RedacaoRequest):
         else:
             resultado = await corrigir_redacao_simulada(redacao)
             
-        logger.info(f"✅ Redação corrigida - Pontuação: {resultado['pontuacao_total']}/1000")
+        logger.info(f"âœ… RedaÃ§Ã£o corrigida - PontuaÃ§Ã£o: {resultado['pontuacao_total']}/1000")
         return resultado
         
     except Exception as e:
-        logger.error(f"❌ Erro na correção de redação: {e}")
+        logger.error(f"âŒ Erro na correÃ§Ã£o de redaÃ§Ã£o: {e}")
         raise HTTPException(
             status_code=500, 
-            detail="Erro interno durante a correção da redação"
+            detail="Erro interno durante a correÃ§Ã£o da redaÃ§Ã£o"
         )
 
 @app.get("/questao/{questao_id}")
 async def obter_questao(questao_id: int):
-    """Obtém uma questão específica com cache"""
+    """ObtÃ©m uma questÃ£o especÃ­fica com cache"""
     try:
         result = await get_questao_com_cache(questao_id)
         
         if not result:
             raise HTTPException(
                 status_code=404, 
-                detail=f"Questão ID {questao_id} não encontrada"
+                detail=f"QuestÃ£o ID {questao_id} nÃ£o encontrada"
             )
         
         disciplina = result.disciplina
@@ -552,7 +442,7 @@ async def obter_questao(questao_id: int):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Erro ao obter questão {questao_id}: {e}")
+        logger.error(f"âŒ Erro ao obter questÃ£o {questao_id}: {e}")
         raise HTTPException(
             status_code=500, 
             detail="Erro interno do servidor"
@@ -560,7 +450,7 @@ async def obter_questao(questao_id: int):
 
 @app.get("/disciplinas")
 def listar_disciplinas():
-    """Lista todas as disciplinas disponíveis"""
+    """Lista todas as disciplinas disponÃ­veis"""
     return {
         "disciplinas": global_state.get("all_disciplines", []),
         "total": len(global_state.get("all_disciplines", []))
@@ -569,20 +459,20 @@ def listar_disciplinas():
 @app.get("/simulado/iniciar/{quantidade}")
 async def iniciar_simulado_filtrado(
     quantidade: int, 
-    disciplinas: Optional[str] = Query(None, description="Lista de disciplinas separadas por vírgula")
+    disciplinas: Optional[str] = Query(None, description="Lista de disciplinas separadas por vÃ­rgula")
 ):
     """Inicia um simulado com filtros opcionais"""
     if quantidade <= 0:
         raise HTTPException(
             status_code=400, 
-            detail="❌ A quantidade deve ser maior que zero"
+            detail="âŒ A quantidade deve ser maior que zero"
         )
     
     max_questoes = global_state.get("total_questoes", 295)
     if quantidade > max_questoes:
         raise HTTPException(
             status_code=400, 
-            detail=f"❌ Quantidade máxima permitida é {max_questoes} questões"
+            detail=f"âŒ Quantidade mÃ¡xima permitida Ã© {max_questoes} questÃµes"
         )
 
     # Processar disciplinas do filtro
@@ -597,7 +487,7 @@ async def iniciar_simulado_filtrado(
         if not disciplinas_validas:
             raise HTTPException(
                 status_code=400, 
-                detail="❌ Nenhuma disciplina válida fornecida"
+                detail="âŒ Nenhuma disciplina vÃ¡lida fornecida"
             )
         disciplinas_filtro = disciplinas_validas
 
@@ -607,21 +497,21 @@ async def iniciar_simulado_filtrado(
         if not simulado_list_ids:
             raise HTTPException(
                 status_code=404, 
-                detail="❌ Não foi possível montar o teste com os filtros fornecidos."
+                detail="âŒ NÃ£o foi possÃ­vel montar o teste com os filtros fornecidos."
             )
 
-        logger.info(f"🎯 Simulado criado: {len(simulado_list_ids)} questões")
+        logger.info(f"ðŸŽ¯ Simulado criado: {len(simulado_list_ids)} questÃµes")
 
         return {
             "simulado_ids": simulado_list_ids,
             "total_simulado": len(simulado_list_ids),
             "disciplinas": disciplinas_filtro or "Todas",
-            "message": f"✅ Simulado montado com {len(simulado_list_ids)} questões",
+            "message": f"âœ… Simulado montado com {len(simulado_list_ids)} questÃµes",
             "gemini_available": GEMINI_AVAILABLE
         }
 
     except Exception as e:
-        logger.error(f"❌ Erro ao criar simulado: {e}")
+        logger.error(f"âŒ Erro ao criar simulado: {e}")
         raise HTTPException(
             status_code=500, 
             detail="Erro interno ao montar o simulado"
@@ -629,7 +519,7 @@ async def iniciar_simulado_filtrado(
 
 @app.post("/questao/responder")
 async def registrar_resposta(resposta: RespostaRequest):
-    """Registra uma resposta e atualiza estatísticas"""
+    """Registra uma resposta e atualiza estatÃ­sticas"""
     engine = global_state["engine"]
     questoes_table = global_state["questoes_table"]
     estatisticas_table = global_state["estatisticas_table"]
@@ -640,7 +530,7 @@ async def registrar_resposta(resposta: RespostaRequest):
             if not questao:
                 raise HTTPException(
                     status_code=404, 
-                    detail="Questão não encontrada"
+                    detail="QuestÃ£o nÃ£o encontrada"
                 )
             
             acertou = resposta.alternativa_escolhida.upper() == questao.gabarito.upper()
@@ -653,15 +543,15 @@ async def registrar_resposta(resposta: RespostaRequest):
             justificativa_escolhida = getattr(
                 questao, 
                 f"just_{resposta.alternativa_escolhida.lower()}", 
-                "Justificativa não disponível."
+                "Justificativa nÃ£o disponÃ­vel."
             )
             justificativa_correta = getattr(
                 questao, 
                 f"just_{questao.gabarito.lower()}", 
-                "Justificativa não disponível."
+                "Justificativa nÃ£o disponÃ­vel."
             )
             
-            # Atualizar estatísticas
+            # Atualizar estatÃ­sticas
             query_estat = db.select(estatisticas_table).where(
                 estatisticas_table.columns.disciplina == disciplina
             )
@@ -706,16 +596,16 @@ async def registrar_resposta(resposta: RespostaRequest):
             
             conn.commit()
             
-            # Limpar cache da questão se existir
+            # Limpar cache da questÃ£o se existir
             await questao_cache.set(resposta.questao_id, None)
             
-            # Análise de desempenho
-            analise_desempenho = "✅ Resposta correta! " + (
+            # AnÃ¡lise de desempenho
+            analise_desempenho = "âœ… Resposta correta! " + (
                 "Excelente!" if resposta.tempo_resposta and resposta.tempo_resposta < 60 else
                 "Bom tempo!" if resposta.tempo_resposta and resposta.tempo_resposta < 120 else
                 "Tempo um pouco alto, pratique mais!"
-            ) if acertou else "❌ Resposta incorreta. " + (
-                "Revise este conteúdo!" if resposta.tempo_resposta and resposta.tempo_resposta > 120 else
+            ) if acertou else "âŒ Resposta incorreta. " + (
+                "Revise este conteÃºdo!" if resposta.tempo_resposta and resposta.tempo_resposta > 120 else
                 "Continue praticando!"
             )
             
@@ -734,7 +624,7 @@ async def registrar_resposta(resposta: RespostaRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Erro ao registrar resposta: {e}")
+        logger.error(f"âŒ Erro ao registrar resposta: {e}")
         raise HTTPException(
             status_code=500, 
             detail="Erro interno ao processar resposta"
@@ -742,7 +632,7 @@ async def registrar_resposta(resposta: RespostaRequest):
 
 @app.post("/simulado/historico")
 async def registrar_historico_simulado(historico: HistoricoRequest):
-    """Registra histórico de simulado completo"""
+    """Registra histÃ³rico de simulado completo"""
     try:
         with global_state["engine"].connect() as conn:
             total_questoes = max(historico.total_questoes, 1)
@@ -762,43 +652,43 @@ async def registrar_historico_simulado(historico: HistoricoRequest):
             ))
             conn.commit()
             
-            logger.info(f"📊 Histórico registrado: {acertos}/{total_questoes} - {aproveitamento:.1f}%")
+            logger.info(f"ðŸ“Š HistÃ³rico registrado: {acertos}/{total_questoes} - {aproveitamento:.1f}%")
             
             return {
                 "status": "success", 
-                "mensagem": "Histórico registrado com sucesso",
+                "mensagem": "HistÃ³rico registrado com sucesso",
                 "analise": gerar_analise_desempenho(aproveitamento, tempo_medio)
             }
     except Exception as e:
-        logger.error(f"❌ Erro ao registrar histórico: {e}")
+        logger.error(f"âŒ Erro ao registrar histÃ³rico: {e}")
         raise HTTPException(
             status_code=500, 
-            detail="Erro interno ao registrar histórico"
+            detail="Erro interno ao registrar histÃ³rico"
         )
 
 def gerar_analise_desempenho(aproveitamento: float, tempo_medio: float):
-    """Gera análise de desempenho baseada em métricas"""
+    """Gera anÃ¡lise de desempenho baseada em mÃ©tricas"""
     if aproveitamento >= 80:
-        nivel = "🎖️ Excelente"
+        nivel = "ðŸŽ–ï¸ Excelente"
         recomendacao = "Continue mantendo este excelente ritmo!"
     elif aproveitamento >= 60:
-        nivel = "✅ Bom"
+        nivel = "âœ… Bom"
         recomendacao = "Bom desempenho, continue evoluindo."
     elif aproveitamento >= 40:
-        nivel = "📚 Em Desenvolvimento"
-        recomendacao = "Estude os conteúdos básicos e pratique mais."
+        nivel = "ðŸ“š Em Desenvolvimento"
+        recomendacao = "Estude os conteÃºdos bÃ¡sicos e pratique mais."
     else:
-        nivel = "🎯 Precisa Melhorar"
-        recomendacao = "Reveja os conceitos fundamentais e faça mais exercícios."
+        nivel = "ðŸŽ¯ Precisa Melhorar"
+        recomendacao = "Reveja os conceitos fundamentais e faÃ§a mais exercÃ­cios."
     
     if tempo_medio < 60:
-        tempo_analise = "⏱️ Ritmo ótimo"
+        tempo_analise = "â±ï¸ Ritmo Ã³timo"
     elif tempo_medio < 90:
-        tempo_analise = "⏱️ Ritmo bom"
+        tempo_analise = "â±ï¸ Ritmo bom"
     elif tempo_medio < 120:
-        tempo_analise = "⏱️ Ritmo regular"
+        tempo_analise = "â±ï¸ Ritmo regular"
     else:
-        tempo_analise = "⏱️ Pratique para melhorar a velocidade"
+        tempo_analise = "â±ï¸ Pratique para melhorar a velocidade"
     
     return {
         "nivel": nivel,
@@ -810,14 +700,14 @@ def gerar_analise_desempenho(aproveitamento: float, tempo_medio: float):
 
 @app.get("/dashboard-data")
 async def obter_dados_dashboard():
-    """Obtém dados completos para o dashboard"""
+    """ObtÃ©m dados completos para o dashboard"""
     engine = global_state["engine"]
     estatisticas_table = global_state["estatisticas_table"]
     simulados_feitos_table = global_state["simulados_feitos_table"]
     
     try:
         with engine.connect() as conn:
-            # Estatísticas por disciplina
+            # EstatÃ­sticas por disciplina
             query_estat = db.select(estatisticas_table)
             estatisticas_raw = conn.execute(query_estat).fetchall()
             
@@ -854,10 +744,10 @@ async def obter_dados_dashboard():
             
             ranking = []
             for rank in ranking_raw:
-                # Formatar pontuação
+                # Formatar pontuaÃ§Ã£o
                 pontuacao_formatada = f"{rank.pontuacao_final:.1f}"
                 
-                # Formatar duração
+                # Formatar duraÃ§Ã£o
                 horas = rank.duracao_segundos // 3600
                 minutos = (rank.duracao_segundos % 3600) // 60
                 segundos = rank.duracao_segundos % 60
@@ -875,7 +765,7 @@ async def obter_dados_dashboard():
                     "aproveitamento": rank.aproveitamento
                 })
             
-            # Calcular métricas gerais
+            # Calcular mÃ©tricas gerais
             total_respondidas_geral = total_acertos_geral + total_erros_geral
             aproveitamento_geral = (total_acertos_geral / total_respondidas_geral * 100) if total_respondidas_geral > 0 else 0
             
@@ -895,7 +785,7 @@ async def obter_dados_dashboard():
             }
             
     except Exception as e:
-        logger.error(f"❌ Erro ao obter dados do dashboard: {e}")
+        logger.error(f"âŒ Erro ao obter dados do dashboard: {e}")
         raise HTTPException(
             status_code=500, 
             detail="Erro interno ao processar dados do dashboard"
@@ -903,7 +793,7 @@ async def obter_dados_dashboard():
 
 @app.get("/estatisticas/resumo")
 async def obter_resumo_estatisticas():
-    """Endpoint rápido para resumo de estatísticas"""
+    """Endpoint rÃ¡pido para resumo de estatÃ­sticas"""
     try:
         with global_state["engine"].connect() as conn:
             estatisticas_table = global_state["estatisticas_table"]
@@ -928,12 +818,12 @@ async def obter_resumo_estatisticas():
             }
             
     except Exception as e:
-        logger.error(f"❌ Erro ao obter resumo: {e}")
+        logger.error(f"âŒ Erro ao obter resumo: {e}")
         raise HTTPException(status_code=500, detail="Erro interno")
 
 @app.get("/questoes/total")
 async def obter_total_questoes():
-    """Retorna o total de questões disponíveis"""
+    """Retorna o total de questÃµes disponÃ­veis"""
     return {
         "total_questoes": global_state.get("total_questoes", 0),
         "disciplinas": len(global_state.get("all_disciplines", [])),
@@ -945,27 +835,32 @@ if __name__ == "__main__":
     import os
     
     print("\n" + "="*60)
-    print("🚀 CONCURSOMASTER AI PREMIUM v2.0 - SERVIDOR INICIANDO")
+    print("ðŸš€ CONCURSOMASTER AI PREMIUM v2.0 - SERVIDOR INICIANDO")
     print("="*60)
     
     if GEMINI_AVAILABLE:
-        print("🤖 Google Gemini AI: ✅ ATIVADO")
+        print("ðŸ¤– Google Gemini AI: âœ… ATIVADO")
     else:
-        print("🔧 Google Gemini AI: ⚠️  Configure sua API key para recursos avançados")
+        print("ðŸ”§ Google Gemini AI: âš ï¸  Configure sua API key para recursos avanÃ§ados")
     
-    # CONFIGURAÇÕES PARA PRODUÇÃO (ONLINE)
-    host = "0.0.0.0"  # ← MUDAR de "127.0.0.1" para "0.0.0.0"
-    port = int(os.environ.get("PORT", 8000))  # ← Usar PORT do ambiente
+    # CONFIGURAÃ‡Ã•ES PARA PRODUÃ‡ÃƒO (ONLINE)
+    host = "0.0.0.0"  # â† MUDAR de "127.0.0.1" para "0.0.0.0"
+    port = int(os.environ.get("PORT", 8000))  # â† Usar PORT do ambiente
     
-    print(f"🌐 Servidor rodando em: http://{host}:{port}")
-    print("📚 API Documentation: http://127.0.0.1:8000/docs")
-    print("🔍 Health Check: http://127.0.0.1:8000/health")
+    print(f"ðŸŒ Servidor rodando em: http://{host}:{port}")
+    print("ðŸ“š API Documentation: http://127.0.0.1:8000/docs")
+    print("ðŸ” Health Check: http://127.0.0.1:8000/health")
     print("="*60 + "\n")
     
-    # MUDAR para produção:
+    # MUDAR para produÃ§Ã£o:
     uvicorn.run(
         app, 
-        host=host,      # ← 0.0.0.0 em vez de 127.0.0.1
-        port=port,      # ← Porta do ambiente
+        host=host,      # â† 0.0.0.0 em vez de 127.0.0.1
+        port=port,      # â† Porta do ambiente
         log_level="info"
     )
+
+
+
+
+
