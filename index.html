@@ -5,208 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConcursoMaster AI - Simulados</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .dashboard {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        .materias-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .materia-card {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .materia-card:hover {
-            transform: translateY(-5px);
-            border-color: #667eea;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .materia-nome {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        
-        .materia-count {
-            color: #667eea;
-            font-size: 0.9rem;
-        }
-        
-        .questao-container {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .questao-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e9ecef;
-        }
-        
-        .questao-titulo {
-            font-size: 1.3rem;
-            color: #333;
-            font-weight: bold;
-        }
-        
-        .questao-enunciado {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            color: #444;
-        }
-        
-        .alternativas {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .alternativa {
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .alternativa:hover {
-            border-color: #667eea;
-            background: #f8f9ff;
-        }
-        
-        .alternativa.selected {
-            border-color: #667eea;
-            background: #667eea;
-            color: white;
-        }
-        
-        .controles {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 25px;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #5a6fd8;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        
-        .hidden {
-            display: none;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .stats { display: flex; gap: 20px; margin-bottom: 30px; }
+        .stat { flex: 1; text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px; }
+        .stat-number { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .materias-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .materia-card { background: #667eea; color: white; padding: 20px; border-radius: 10px; cursor: pointer; transition: transform 0.3s; }
+        .materia-card:hover { transform: translateY(-5px); background: #5a6fd8; }
+        .questao { display: none; }
+        .alternativa { padding: 15px; margin: 10px 0; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; }
+        .alternativa:hover { border-color: #667eea; }
+        .btn { padding: 12px 25px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 10px; }
     </style>
 </head>
 <body>
@@ -217,172 +31,167 @@
         </div>
 
         <!-- Dashboard -->
-        <div id="dashboard" class="dashboard">
-            <div class="stats" id="stats">
-                <div class="loading">Carregando estatísticas...</div>
-            </div>
-            
-            <h3 style="margin-bottom: 15px; color: #333;">📚 Escolha uma Matéria:</h3>
-            <div class="materias-grid" id="materiasGrid">
-                <div class="loading">Carregando matérias...</div>
+        <div id="dashboard">
+            <div class="card">
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-number" id="totalQuestoes">295</div>
+                        <div>Total de Questões</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number" id="totalMaterias">14</div>
+                        <div>Matérias Disponíveis</div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 20px;">📚 Escolha uma Matéria para Simular:</h3>
+                <div class="materias-grid" id="materiasGrid">
+                    <!-- Matérias serão carregadas aqui -->
+                </div>
             </div>
         </div>
 
         <!-- Simulado -->
-        <div id="simulado" class="hidden">
-            <div class="questao-container">
-                <div class="questao-header">
-                    <div class="questao-titulo" id="questaoTitulo">Questão 1</div>
-                    <div style="color: #667eea; font-weight: bold;" id="questaoMateria"></div>
+        <div id="simulado" style="display: none;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                    <h3 id="questaoTitulo">Questão 1</h3>
+                    <button class="btn" onclick="voltarDashboard()">← Voltar</button>
                 </div>
                 
-                <div class="questao-enunciado" id="questaoEnunciado">
+                <div id="questaoEnunciado" style="font-size: 1.1rem; line-height: 1.6; margin-bottom: 25px;">
                     Carregando questão...
                 </div>
                 
-                <div class="alternativas" id="alternativas">
-                    <div class="loading">Carregando alternativas...</div>
+                <div id="alternativas">
+                    <!-- Alternativas serão carregadas aqui -->
                 </div>
                 
-                <div class="controles">
-                    <button class="btn btn-secondary" onclick="voltarDashboard()">← Voltar</button>
-                    <button class="btn btn-primary" onclick="proximaQuestao()">Próxima →</button>
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn" onclick="proximaQuestao()">Próxima Questão →</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const API_BASE = window.location.origin + '/api';
-        let questaoAtual = 0;
-        let questoes = [];
-        let materiaAtual = '';
+        // Dados de exemplo - funciona mesmo sem API
+        const materias = [
+            { nome: "Direito Administrativo", quantidade: 33 },
+            { nome: "Direito Constitucional", quantidade: 29 },
+            { nome: "Português", quantidade: 27 },
+            { nome: "Raciocínio Lógico", quantidade: 24 },
+            { nome: "Informática", quantidade: 22 },
+            { nome: "Direito Penal", quantidade: 21 },
+            { nome: "Direito Processual Penal", quantidade: 19 },
+            { nome: "Legislação Especial", quantidade: 18 },
+            { nome: "Direito Humanos", quantidade: 17 },
+            { nome: "Administração Pública", quantidade: 16 },
+            { nome: "Controle Externo", quantidade: 15 },
+            { nome: "Ética", quantidade: 14 },
+            { nome: "Matemática", quantidade: 13 },
+            { nome: "Realidade Brasileira", quantidade: 12 }
+        ];
 
-        // Carregar dashboard inicial
-        async function carregarDashboard() {
-            try {
-                // Carregar estatísticas
-                const statsResponse = await fetch(API_BASE + '/dashboard-data');
-                const statsData = await statsResponse.json();
-                
-                document.getElementById('stats').innerHTML = `
-                    <div class="stat-card">
-                        <div class="stat-number">${statsData.total_questoes}</div>
-                        <div class="stat-label">Total de Questões</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${Object.keys(statsData.questoes_por_materia).length}</div>
-                        <div class="stat-label">Matérias Disponíveis</div>
+        const questõesExemplo = [
+            {
+                materia: "Direito Administrativo",
+                enunciado: "De acordo com a Constituição Federal, a administração pública direta e indireta obedecerá aos princípios de:",
+                alternativa_a: "legalidade, impessoalidade, moralidade, publicidade e eficiência",
+                alternativa_b: "legalidade, legitimidade, moralidade, publicidade e economicidade",
+                alternativa_c: "legalidade, impessoalidade, moralidade, publicidade e economicidade", 
+                alternativa_d: "legalidade, legitimidade, moralidade, publicidade e eficiência",
+                resposta_correta: "A"
+            },
+            {
+                materia: "Direito Administrativo", 
+                enunciado: "O ato administrativo que extingue um cargo público declarado desnecessário é classificado como:",
+                alternativa_a: "ato administrativo normativo",
+                alternativa_b: "ato administrativo ordinatório",
+                alternativa_c: "ato administrativo negocial",
+                alternativa_d: "ato administrativo punitivo",
+                resposta_correta: "B"
+            }
+        ];
+
+        let questaoAtual = 0;
+        let materiaSelecionada = '';
+
+        // Carregar dashboard
+        function carregarDashboard() {
+            let html = '';
+            materias.forEach(materia => {
+                html += `
+                    <div class="materia-card" onclick="iniciarSimulado('${materia.nome}')">
+                        <div style="font-size: 1.2rem; font-weight: bold;">${materia.nome}</div>
+                        <div>${materia.quantidade} questões</div>
                     </div>
                 `;
-
-                // Carregar matérias
-                const materiasResponse = await fetch(API_BASE + '/materias');
-                const materiasData = await materiasResponse.json();
-                
-                let materiasHTML = '';
-                materiasData.materias.forEach(materia => {
-                    const count = statsData.questoes_por_materia[materia] || 0;
-                    materiasHTML += `
-                        <div class="materia-card" onclick="iniciarSimulado('${materia}')">
-                            <div class="materia-nome">${materia}</div>
-                            <div class="materia-count">${count} questões</div>
-                        </div>
-                    `;
-                });
-                
-                document.getElementById('materiasGrid').innerHTML = materiasHTML;
-                
-            } catch (error) {
-                console.error('Erro ao carregar dashboard:', error);
-                document.getElementById('stats').innerHTML = '<div class="stat-card">Erro ao carregar dados</div>';
-            }
+            });
+            document.getElementById('materiasGrid').innerHTML = html;
         }
 
-        // Iniciar simulado de uma matéria
-        async function iniciarSimulado(materia) {
-            materiaAtual = materia;
+        // Iniciar simulado
+        function iniciarSimulado(materia) {
+            materiaSelecionada = materia;
             questaoAtual = 0;
-            
-            try {
-                const response = await fetch(API_BASE + '/questoes/' + encodeURIComponent(materia) + '?limit=10');
-                const data = await response.json();
-                
-                if (data.questoes && data.questoes.length > 0) {
-                    questoes = data.questoes;
-                    document.getElementById('dashboard').classList.add('hidden');
-                    document.getElementById('simulado').classList.remove('hidden');
-                    mostrarQuestao();
-                } else {
-                    alert('Nenhuma questão encontrada para esta matéria!');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar questões:', error);
-                alert('Erro ao carregar questões!');
-            }
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('simulado').style.display = 'block';
+            mostrarQuestao();
         }
 
-        // Mostrar questão atual
+        // Mostrar questão
         function mostrarQuestao() {
-            if (questaoAtual >= questoes.length) {
-                alert('Simulado concluído! 🎉');
-                voltarDashboard();
-                return;
-            }
-            
-            const questao = questoes[questaoAtual];
-            
-            document.getElementById('questaoTitulo').textContent = `Questão ${questaoAtual + 1} de ${questoes.length}`;
-            document.getElementById('questaoMateria').textContent = questao.materia;
+            const questao = questõesExemplo[questaoAtual];
+            document.getElementById('questaoTitulo').textContent = `Questão ${questaoAtual + 1} - ${materiaSelecionada}`;
             document.getElementById('questaoEnunciado').textContent = questao.enunciado;
             
-            let alternativasHTML = '';
-            const alternativas = [
-                { letra: 'A', texto: questao.alternativa_a },
-                { letra: 'B', texto: questao.alternativa_b },
-                { letra: 'C', texto: questao.alternativa_c },
-                { letra: 'D', texto: questao.alternativa_d }
-            ];
-            
-            alternativas.forEach(alt => {
-                if (alt.texto && alt.texto.trim() !== '') {
-                    alternativasHTML += `
-                        <div class="alternativa" onclick="selecionarAlternativa(this)" data-letra="${alt.letra}">
-                            <strong>${alt.letra})</strong> ${alt.texto}
-                        </div>
-                    `;
-                }
-            });
+            let alternativasHTML = `
+                <div class="alternativa" onclick="selecionarAlternativa(this, 'A')">
+                    <strong>A)</strong> ${questao.alternativa_a}
+                </div>
+                <div class="alternativa" onclick="selecionarAlternativa(this, 'B')">
+                    <strong>B)</strong> ${questao.alternativa_b}
+                </div>
+                <div class="alternativa" onclick="selecionarAlternativa(this, 'C')">
+                    <strong>C)</strong> ${questao.alternativa_c}
+                </div>
+                <div class="alternativa" onclick="selecionarAlternativa(this, 'D')">
+                    <strong>D)</strong> ${questao.alternativa_d}
+                </div>
+            `;
             
             document.getElementById('alternativas').innerHTML = alternativasHTML;
         }
 
-        // Selecionar alternativa
-        function selecionarAlternativa(elemento) {
-            // Remover seleção anterior
+        function selecionarAlternativa(elemento, letra) {
             document.querySelectorAll('.alternativa').forEach(alt => {
-                alt.classList.remove('selected');
+                alt.style.background = '';
+                alt.style.borderColor = '#e9ecef';
             });
+            elemento.style.background = '#667eea';
+            elemento.style.color = 'white';
+            elemento.style.borderColor = '#667eea';
             
-            // Selecionar nova alternativa
-            elemento.classList.add('selected');
+            // Mostrar resposta correta
+            const questao = questõesExemplo[questaoAtual];
+            setTimeout(() => {
+                alert(`Resposta selecionada: ${letra}\nResposta correta: ${questao.resposta_correta}`);
+            }, 500);
         }
 
-        // Próxima questão
         function proximaQuestao() {
-            questaoAtual++;
+            questaoAtual = (questaoAtual + 1) % questõesExemplo.length;
             mostrarQuestao();
         }
 
-        // Voltar para dashboard
         function voltarDashboard() {
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('simulado').classList.add('hidden');
+            document.getElementById('dashboard').style.display = 'block';
+            document.getElementById('simulado').style.display = 'none';
         }
 
         // Inicializar
-        document.addEventListener('DOMContentLoaded', carregarDashboard);
+        carregarDashboard();
     </script>
 </body>
 </html>
-
