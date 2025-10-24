@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConcursoMaster AI - Dashboard Analytics</title>
+    
+    <style>
+        /* --- ESTILOS PREMIUM v3.0 --- */
+        :root {
+            --color-primary: #1e88e5;
+            --color-primary-dark: #1565c0;
+            --color-secondary: #546e7a;
+            --color-success: #43a047;
+            --color-warning: #ff9800;
+            --color-danger: #e53935;
+            --color-light: #f8f9fa;
+            --color-white: #ffffff;
+            --color-dark: #212529;
+            --shadow-card: 0 6px 20px rgba(0, 0, 0, 0.12);
+            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --gradient-primary: linear-gradient(135deg, #1e88e5 0%, #0d47a1 100%);
+            --gradient-success: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+            --gradient-danger: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+            --gradient-warning: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background-color: var(--color-white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            margin-top: 80px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* NAVEGAÇÃO SUPERIOR PREMIUM */
+        nav {
+            width: 100%;
+            background: var(--gradient-primary);
+            border-bottom: none;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        nav ul {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            list-style: none;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        nav a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 1.1em;
+            padding: 18px 22px;
+            display: block;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: var(--color-white);
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        nav a.active {
+            color: var(--color-white);
+            font-weight: 600;
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            width: 60%;
+            height: 3px;
+            background-color: #ffeb3b;
+            border-radius: 2px;
+        }
+
+        /* HEADER COM GRADIENTE */
+        .header {
+            background: var(--gradient-primary);
+            color: var(--color-white);
+            padding: 30px 35px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1%, transparent 1%);
+            background-size: 20px 20px;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 600;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+            position: relative;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        /* CARDS DE ESTATÍSTICAS */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow-card);
+            border-left: 5px solid var(--color-primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-card.success { border-left-color: var(--color-success); }
+        .stat-card.warning { border-left-color: var(--color-warning); }
+        .stat-card.danger { border-left-color: var(--color-danger); }
+
+        .stat-card h3 {
+            color: var(--color-secondary);
+            font-size: 1em;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 10px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover .value {
+            transform: scale(1.05);
+        }
+
+        .stat-card.success .value { color: var(--color-success); }
+        .stat-card.warning .value { color: var(--color-warning); }
+        .stat-card.danger .value { color: var(--color-danger); }
+
+        .stat-card .trend {
+            font-size: 0.9em;
+            color: var(--color-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .trend.up { color: var(--color-success); }
+        .trend.down { color: var(--color-danger); }
+
+        /* NOVO: CARDS DE EVOLUÇÃO */
+        .evolucao-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .evolucao-card {
+            background: var(--color-white);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .evolucao-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .evolucao-card h4 {
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .evolucao-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .evolucao-linha:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .evolucao-disciplina {
+            font-weight: 500;
+            color: var(--color-dark);
+        }
+
+        .evolucao-valor {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .evolucao-valor.positivo { color: var(--color-success); }
+        .evolucao-valor.negativo { color: var(--color-danger); }
+
+        /* TABELAS PREMIUM */
+        .stats-table, .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0 40px 0;
+            font-size: 0.95em;
+            background: var(--color-white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: transform 0.3s ease;
+        }
+
+        .stats-table:hover, .ranking-table:hover {
+            transform: translateY(-2px);
+        }
+
+        .stats-table th, .stats-table td, .ranking-table th, .ranking-table td {
+            border: none;
+            padding: 16px 20px;
+            text-align: left;
+        }
+
+        .stats-table thead, .ranking-table thead {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .stats-table th, .ranking-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.9em;
+        }
+
+        .stats-table tbody tr, .ranking-table tbody tr {
+            transition: background-color 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stats-table tbody tr:hover, .ranking-table tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+
+        .stats-table tbody tr:last-child, .ranking-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        /* COLUNAS COLORIDAS */
+        .col-acertos { text-align: center; color: var(--color-success); font-weight: 600; }
+        .col-erros { text-align: center; color: var(--color-danger); font-weight: 600; }
+        .col-total { text-align: center; font-weight: bold; color: var(--color-primary); }
+        .col-score { text-align: center; color: var(--color-primary); font-weight: 700; }
+        .col-percent { text-align: center; font-weight: 600; }
+
+        .col-rank-score { text-align: center; color: var(--color-primary); font-weight: bold; font-size: 1.1em; }
+        .col-rank-time { text-align: center; color: var(--color-warning); font-weight: 500; }
+
+        /* BARRA DE PROGRESSO AVANÇADA */
+        .progress-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 22px;
+            margin-top: 8px;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            text-align: right;
+            padding-right: 10px;
+            color: white;
+            font-size: 0.75em;
+            line-height: 22px;
+            font-weight: 600;
+            background: var(--gradient-success);
+            transition: width 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 20px 20px;
+            animation: move 2s linear infinite;
+        }
+
+        @keyframes move {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 20px; }
+        }
+
+        .progress-bar.erros {
+            background: var(--gradient-danger);
+            float: right;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: var(--color-secondary);
+            margin-top: 5px;
+        }
+
+        .stats-table tfoot {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            font-weight: 600;
+        }
+
+        .stats-table tfoot th {
+            border-top: 3px solid var(--color-primary);
+            font-size: 1.05em;
+        }
+
+        /* RANKING PREMIUM */
+        .ranking-header {
+            margin: 60px 0 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .ranking-header h2 {
+            color: var(--color-primary);
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .ranking-table tr.ranking-ouro { 
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%) !important; 
+            font-weight: 600;
+        }
+        .ranking-table tr.ranking-prata { 
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%) !important; 
+        }
+        .ranking-table tr.ranking-bronze { 
+            background: linear-gradient(135deg, #fbe9e7 0%, #ffccbc 100%) !important; 
+        }
+
+        .ranking-table tr.ranking-ouro td:first-child::before {
+            content: '🥇';
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        .ranking-table tr.ranking-prata td:first-child::before {
+            content: '🥈';
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        .ranking-table tr.ranking-bronze td:first-child::before {
+            content: '🥉';
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+
+        /* BOTÕES DE AÇÃO */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .action-btn.primary {
+            background: var(--color-primary);
+        }
+
+        .action-btn.success {
+            background: var(--color-success);
+        }
+
+        .action-btn.warning {
+            background: var(--color-warning);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* BOTÃO DE RETORNO PREMIUM */
+        #btn-retorno-menu {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 16px 30px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 40px auto 20px auto;
+            display: block;
+            width: 280px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #btn-retorno-menu::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        #btn-retorno-menu:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(30, 136, 229, 0.4);
+        }
+
+        #btn-retorno-menu:hover::before {
+            left: 100%;
+        }
+
+        /* MODAL DE ESTATÍSTICAS */
+        #modal-estatisticas {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: var(--color-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--color-danger);
+        }
+
+        /* ANIMAÇÕES */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* NOVO: GRÁFICOS SIMPLES */
+        .grafico-container {
+            background: var(--color-white);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-card);
+            margin-bottom: 30px;
+        }
+
+        .grafico-barras {
+            display: flex;
+            align-items: end;
+            height: 200px;
+            gap: 10px;
+            padding: 20px 0;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .barra {
+            flex: 1;
+            background: var(--gradient-primary);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 10px;
+        }
+
+        .barra:hover {
+            transform: scaleY(1.05);
+            box-shadow: 0 4px 15px rgba(30, 136, 229, 0.3);
+        }
+
+        .barra-label {
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--color-secondary);
+            font-weight: 500;
+        }
+
+        .barra-valor {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 768px) {
+            .main-content { padding: 20px; }
+            .stats-cards, .evolucao-cards { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.8em; }
+            nav a { padding: 15px 18px; font-size: 1em; }
+            .ranking-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+            .action-buttons { flex-direction: column; }
+            .stats-table, .ranking-table { font-size: 0.85em; }
+            .stats-table th, .stats-table td, .ranking-table th, .ranking-table td { padding: 12px 15px; }
+        }
+
+        /* LOADING ANIMATION */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* SISTEMA DE NOTIFICAÇÕES */
+        .notificacao {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+            border-left: 4px solid var(--color-primary);
+            max-width: 350px;
+        }
+
+        .notificacao.sucesso {
+            border-left-color: var(--color-success);
+        }
+
+        .notificacao.alerta {
+            border-left-color: var(--color-warning);
+        }
+
+        .notificacao.erro {
+            border-left-color: var(--color-danger);
+        }
+
+        .notificacao-icone {
+            font-size: 1.3em;
+        }
+
+        .notificacao button {
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* NOVO: INDICADOR DE ATUALIZAÇÃO */
+        .ultima-atualizacao {
+            text-align: center;
+            color: var(--color-secondary);
+            font-size: 0.9em;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body onload="carregarDashboardData()">
+    <div class="container">
+        <header class="header">
+            <h1>📊 Dashboard Analytics Avançado</h1>
+            <p>Análise completa do seu desempenho e evolução nos estudos</p>
+        </header>
+
+        <nav>
+            <ul>
+                <li><a href="index.html">🎯 Questões</a></li>
+                <li><a href="redacao.html">✍️ Redação</a></li>
+                <li><a class="active" href="dashboard.html">📈 Dashboard</a></li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            
+            <!-- Cards de Estatísticas Gerais -->
+            <div class="stats-cards">
+                <div class="stat-card success fade-in-up">
+                    <h3>🎯 Taxa de Acerto Geral</h3>
+                    <div class="value" id="taxa-acerto-geral">0%</div>
+                    <div class="trend up" id="trend-acerto">📈 Calculando...</div>
+                </div>
+                
+                <div class="stat-card warning fade-in-up">
+                    <h3>⏱️ Tempo Médio por Questão</h3>
+                    <div class="value" id="tempo-medio">0s</div>
+                    <div class="trend" id="trend-tempo">⏰ Analisando...</div>
+                </div>
+                
+                <div class="stat-card danger fade-in-up">
+                    <h3>📚 Disciplina com Maior Dificuldade</h3>
+                    <div class="value" id="disciplina-dificil">-</div>
+                    <div class="trend down" id="trend-dificuldade">🎯 Analisando...</div>
+                </div>
+                
+                <div class="stat-card fade-in-up">
+                    <h3>🏆 Melhor Score em Simulado</h3>
+                    <div class="value" id="melhor-score">0%</div>
+                    <div class="trend up" id="trend-score">⭐ Calculando...</div>
+                </div>
+            </div>
+
+            <!-- NOVO: Cards de Evolução -->
+            <div class="evolucao-cards" id="evolucao-cards" style="display: none;">
+                <div class="evolucao-card fade-in-up">
+                    <h4>📈 Evolução Semanal</h4>
+                    <div id="evolucao-semanal">
+                        <!-- Carregado dinamicamente -->
+                    </div>
+                </div>
+                <div class="evolucao-card fade-in-up">
+                    <h4>🎯 Disciplinas em Alta</h4>
+                    <div id="disciplinas-alta">
+                        <!-- Carregado dinamicamente -->
+                    </div>
+                </div>
+                <div class="evolucao-card fade-in-up">
+                    <h4>📊 Métricas de Progresso</h4>
+                    <div id="metricas-progresso">
+                        <!-- Carregado dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="action-buttons">
+                <button class="action-btn primary" onclick="carregarDashboardData()">
+                    <span class="loading-spinner" id="refresh-spinner" style="display: none;"></span>
+                    🔄 Atualizar Dados
+                </button>
+                <button class="action-btn success" onclick="exportarDados()">
+                    📥 Exportar Dados
+                </button>
+                <button class="action-btn warning" onclick="abrirModalEstatisticas()">
+                    📈 Estatísticas Detalhadas
+                </button>
+                <button class="action-btn" style="background: var(--color-secondary);" onclick="alternarVisualizacao()">
+                    👁️ Alternar Visualização
+                </button>
+            </div>
+
+            <h2>📈 Estatísticas Detalhadas por Disciplina</h2>
+            <p>Análise completa do seu desempenho com métricas avançadas</p>
+            
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Disciplina</th>
+                        <th class="col-acertos">✅ Acertos</th>
+                        <th class="col-erros">❌ Erros</th>
+                        <th class="col-total">📊 Total</th>
+                        <th class="col-score">🎯 Score Ponderado</th>
+                        <th>📈 Aproveitamento</th>
+                        <th>📊 Progresso Detalhado</th>
+                    </tr>
+                </thead>
+                <tbody id="stats-tbody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <div class="loading-spinner" style="border-top-color: var(--color-primary);"></div>
+                            Carregando estatísticas avançadas...
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot id="stats-tfoot"></tfoot>
+            </table>
+
+            <!-- NOVO: Gráfico de Desempenho -->
+            <div class="grafico-container fade-in-up" id="grafico-container" style="display: none;">
+                <h3>📊 Desempenho por Disciplina</h3>
+                <div class="grafico-barras" id="grafico-barras">
+                    <!-- Gerado dinamicamente -->
+                </div>
+            </div>
+
+            <div class="ranking-header">
+                <h2>🏆 Ranking de Excelência - Wanderson de Paula</h2>
+                <button class="refresh-btn" onclick="carregarDashboardData()">
+                    <span class="loading-spinner" id="ranking-spinner" style="display: none;"></span>
+                    🔄 Atualizar Ranking
+                </button>
+            </div>
+            <p>Seus 10 melhores desempenhos em simulados oficiais</p>
+            
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>Posição</th>
+                        <th>📅 Data</th>
+                        <th class="col-rank-score">🎯 Score Final</th>
+                        <th>✅ Acertos/Total</th>
+                        <th class="col-rank-time">⏱️ Tempo de Prova</th>
+                    </tr>
+                </thead>
+                <tbody id="ranking-tbody">
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 30px;">
+                            📝 Nenhum simulado registrado ainda
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- NOVO: Indicador de Última Atualização -->
+            <div class="ultima-atualizacao" id="ultima-atualizacao">
+                Última atualização: <span id="timestamp-atualizacao">--:--:--</span>
+            </div>
+            
+            <button id="btn-retorno-menu" onclick="window.location.href = 'index.html';">
+                🏠 Voltar ao Menu Principal
+            </button>
+        </main>
+    </div>
+
+    <!-- Modal de Estatísticas Detalhadas -->
+    <div id="modal-estatisticas">
+        <div class="modal-content">
+            <button class="close-modal" onclick="fecharModal()">×</button>
+            <h2>📊 Estatísticas Detalhadas</h2>
+            <div id="graficos-container">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading-spinner" style="border-top-color: var(--color-primary); margin: 0 auto 20px auto;"></div>
+                    <p>Carregando análises avançadas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+        let visualizacaoCompacta = false;
+
+        // --- SISTEMA DE NOTIFICAÇÕES ---
+        class NotificacaoSistema {
+            static mostrar(mensagem, tipo = 'info', tempo = 5000) {
+                const notification = document.createElement('div');
+                notification.className = `notificacao ${tipo}`;
+                notification.innerHTML = `
+                    <span class="notificacao-icone">${this.getIcone(tipo)}</span>
+                    <span class="notificacao-texto">${mensagem}</span>
+                    <button onclick="this.parentElement.remove()">×</button>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, tempo);
+            }
+            
+            static getIcone(tipo) {
+                const icones = {
+                    'info': 'ℹ️',
+                    'sucesso': '✅',
+                    'alerta': '⚠️',
+                    'erro': '❌'
+                };
+                return icones[tipo] || 'ℹ️';
+            }
+        }
+
+        // --- SISTEMA DE RENDERIZAÇÃO DE GRÁFICOS ---
+        function renderizarGraficoBarras(estatisticas) {
+            const container = document.getElementById('grafico-barras');
+            if (!container || estatisticas.length === 0) return;
+
+            container.innerHTML = '';
+            
+            // Encontrar valor máximo para escala
+            const maxAproveitamento = Math.max(...estatisticas.map(stat => stat.aproveitamento_nominal));
+            
+            estatisticas.forEach(stat => {
+                if (stat.total_respondidas > 0) {
+                    const altura = (stat.aproveitamento_nominal / maxAproveitamento) * 160;
+                    const barra = document.createElement('div');
+                    barra.className = 'barra';
+                    barra.style.height = `${altura}px`;
+                    barra.title = `${stat.disciplina}: ${stat.aproveitamento_nominal.toFixed(1)}%`;
+                    
+                    barra.innerHTML = `
+                        <div class="barra-valor">${stat.aproveitamento_nominal.toFixed(0)}%</div>
+                        <div class="barra-label">${stat.disciplina.split(' ')[0]}</div>
+                    `;
+                    
+                    // Cor baseada no desempenho
+                    if (stat.aproveitamento_nominal >= 70) {
+                        barra.style.background = 'var(--gradient-success)';
+                    } else if (stat.aproveitamento_nominal >= 50) {
+                        barra.style.background = 'var(--gradient-warning)';
+                    } else {
+                        barra.style.background = 'var(--gradient-danger)';
+                    }
+                    
+                    container.appendChild(barra);
+                }
+            });
+            
+            document.getElementById('grafico-container').style.display = 'block';
+        }
+
+        function renderProgressBar(acertos, erros) {
+            const total = acertos + erros;
+            if (total === 0) {
+                return `
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 100%; background: #6c757d;">N/A</div>
+                    </div>
+                    <div class="progress-labels">
+                        <span>0%</span>
+                        <span>Sem dados</span>
+                        <span>0%</span>
+                    </div>
+                `;
+            }
+            
+            const percAcertos = (acertos / total) * 100;
+            const percErros = (erros / total) * 100;
+            
+            return `
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${percAcertos}%" title="${percAcertos.toFixed(1)}% de Acerto">
+                        ${percAcertos > 15 ? `${acertos}A` : ''}
+                    </div>
+                    ${percErros > 0 ? `<div class="progress-bar erros" style="width: ${percErros}%" title="${percErros.toFixed(1)}% de Erro">
+                        ${percErros > 15 ? `${erros}E` : ''}
+                    </div>` : ''}
+                </div>
+                <div class="progress-labels">
+                    <span>${acertos}A</span>
+                    <span>${total}Q</span>
+                    <span>${erros}E</span>
+                </div>
+            `;
+        }
+
+        // --- SISTEMA DE EVOLUÇÃO ---
+        function calcularEvolucao(estatisticas) {
+            // Simular dados de evolução (em um sistema real, isso viria do backend)
+            const evolucaoSemanal = [
+                { disciplina: 'Português', variacao: '+5.2%', tendencia: 'up' },
+                { disciplina: 'Matemática', variacao: '+2.1%', tendencia: 'up' },
+                { disciplina: 'Direito', variacao: '-1.5%', tendencia: 'down' }
+            ];
+
+            const disciplinasAlta = estatisticas
+                .filter(stat => stat.aproveitamento_nominal >= 70)
+                .slice(0, 3)
+                .map(stat => ({
+                    nome: stat.disciplina,
+                    score: stat.aproveitamento_nominal.toFixed(1) + '%'
+                }));
+
+            const metricasProgresso = [
+                { label: 'Questões Hoje', valor: '15' },
+                { label: 'Tempo de Estudo', valor: '2h 30m' },
+                { label: 'Streak Atual', valor: '7 dias' }
+            ];
+
+            return { evolucaoSemanal, disciplinasAlta, metricasProgresso };
+        }
+
+        function renderizarEvolucao(dadosEvolucao) {
+            const containerEvolucao = document.getElementById('evolucao-cards');
+            if (!containerEvolucao) return;
+
+            // Evolução Semanal
+            const evolucaoSemanalHTML = dadosEvolucao.evolucaoSemanal.map(item => `
+                <div class="evolucao-linha">
+                    <span class="evolucao-disciplina">${item.disciplina}</span>
+                    <span class="evolucao-valor ${item.tendencia === 'up' ? 'positivo' : 'negativo'}">
+                        ${item.variacao}
+                    </span>
+                </div>
+            `).join('');
+
+            document.getElementById('evolucao-semanal').innerHTML = evolucaoSemanalHTML;
+
+            // Disciplinas em Alta
+            const disciplinasAltaHTML = dadosEvolucao.disciplinasAlta.map(item => `
+                <div class="evolucao-linha">
+                    <span class="evolucao-disciplina">${item.nome}</span>
+                    <span class="evolucao-valor positivo">${item.score}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('disciplinas-alta').innerHTML = disciplinasAltaHTML;
+
+            // Métricas de Progresso
+            const metricasProgressoHTML = dadosEvolucao.metricasProgresso.map(item => `
+                <div class="evolucao-linha">
+                    <span class="evolucao-disciplina">${item.label}</span>
+                    <span class="evolucao-valor">${item.valor}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('metricas-progresso').innerHTML = metricasProgressoHTML;
+
+            containerEvolucao.style.display = 'grid';
+        }
+
+        // --- FUNÇÃO PRINCIPAL DE CARREGAMENTO ---
+        async function carregarDashboardData() {
+            const tbodyStats = document.getElementById('stats-tbody');
+            const tfootStats = document.getElementById('stats-tfoot');
+            const tbodyRanking = document.getElementById('ranking-tbody');
+            const refreshBtn = document.getElementById('refresh-spinner');
+            const rankingSpinner = document.getElementById('ranking-spinner');
+            
+            // Mostrar loading
+            refreshBtn.style.display = 'inline-block';
+            rankingSpinner.style.display = 'inline-block';
+            tbodyStats.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px;">
+                <div class="loading-spinner" style="border-top-color: var(--color-primary);"></div> Carregando dados analíticos...
+            </td></tr>`;
+            
+            let totalAcertosGeral = 0;
+            let totalErrosGeral = 0;
+            let pontuacaoGeral = 0.0;
+            let disciplinaMaisDificil = { nome: '-', taxa: 100 };
+            let melhorAproveitamento = 0;
+
+            try {
+                const response = await fetch(`${API_URL}/dashboard-data`);
+                if (!response.ok) {
+                    throw new Error(`Falha de conexão com o servidor. Status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                const statsList = data.estatisticas;
+                const rankingList = data.ranking;
+                const metricasGerais = data.metricas_gerais;
+
+                // --- 1. Renderiza Estatísticas ---
+                if (statsList.length === 0) {
+                    tbodyStats.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px;">
+                        📝 Nenhum dado encontrado. Responda algumas questões para ver suas estatísticas!
+                    </td></tr>`;
+                } else {
+                    tbodyStats.innerHTML = '';
+                    statsList.forEach(stat => {
+                        totalAcertosGeral += stat.acertos;
+                        totalErrosGeral += stat.erros;
+                        pontuacaoGeral += stat.score_total;
+                        
+                        // Encontra disciplina mais difícil
+                        const taxaErro = stat.erros / (stat.acertos + stat.erros);
+                        if (taxaErro > disciplinaMaisDificil.taxa && stat.erros > 0) {
+                            disciplinaMaisDificil = { nome: stat.disciplina, taxa: taxaErro };
+                        }
+                        
+                        // Encontra melhor aproveitamento
+                        if (stat.aproveitamento_nominal > melhorAproveitamento) {
+                            melhorAproveitamento = stat.aproveitamento_nominal;
+                        }
+                        
+                        const scorePonderado = stat.score_medio_ponderado.toFixed(1);
+                        const aproveitamentoNominal = stat.aproveitamento_nominal.toFixed(1);
+
+                        const newRow = `
+                            <tr class="fade-in-up">
+                                <td><strong>${stat.disciplina}</strong></td>
+                                <td class="col-acertos">${stat.acertos}</td>
+                                <td class="col-erros">${stat.erros}</td>
+                                <td class="col-total">${stat.total_respondidas}</td>
+                                <td class="col-score">${scorePonderado}%</td>
+                                <td class="col-percent">${aproveitamentoNominal}%</td>
+                                <td>${renderProgressBar(stat.acertos, stat.erros)}</td>
+                            </tr>
+                        `;
+                        tbodyStats.innerHTML += newRow;
+                    });
+                    
+                    // Atualiza cards de estatísticas
+                    const totalRespondidasGeral = totalAcertosGeral + totalErrosGeral;
+                    const aproveitamentoGeral = totalRespondidasGeral > 0 ? 
+                        ((totalAcertosGeral / totalRespondidasGeral) * 100).toFixed(1) : 0.0;
+                    
+                    document.getElementById('taxa-acerto-geral').textContent = `${aproveitamentoGeral}%`;
+                    document.getElementById('disciplina-dificil').textContent = disciplinaMaisDificil.nome;
+                    
+                    // Atualizar trends
+                    document.getElementById('trend-acerto').textContent = aproveitamentoGeral >= 70 ? '📈 Acima da média' : '📉 Abaixo da média';
+                    document.getElementById('trend-dificuldade').textContent = disciplinaMaisDificil.taxa >= 0.5 ? '🎯 Foque aqui' : '✅ Em bom ritmo';
+
+                    // Total Geral no Rodapé
+                    const totalGeralRow = `
+                        <tr class="fade-in-up">
+                            <th>📊 TOTAL GERAL</th>
+                            <th class="col-acertos">${totalAcertosGeral}</th>
+                            <th class="col-erros">${totalErrosGeral}</th>
+                            <th class="col-total">${totalRespondidasGeral}</th>
+                            <th class="col-score">${pontuacaoGeral.toFixed(1)}</th>
+                            <th class="col-percent">${aproveitamentoGeral}%</th>
+                            <th>${renderProgressBar(totalAcertosGeral, totalErrosGeral)}</th>
+                        </tr>
+                    `;
+                    tfootStats.innerHTML = totalGeralRow;
+
+                    // Renderizar gráfico
+                    renderizarGraficoBarras(statsList);
+
+                    // Renderizar evolução
+                    const dadosEvolucao = calcularEvolucao(statsList);
+                    renderizarEvolucao(dadosEvolucao);
+                }
+                
+                // --- 2. Renderiza o Ranking ---
+                if (rankingList.length === 0) {
+                    tbodyRanking.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px;">
+                        🎯 Complete seu primeiro simulado para aparecer no ranking!
+                    </td></tr>`;
+                    document.getElementById('melhor-score').textContent = '0%';
+                } else {
+                    tbodyRanking.innerHTML = '';
+                    rankingList.forEach((rank, index) => {
+                        let rankClass = "";
+                        if (index === 0) rankClass = "ranking-ouro";
+                        else if (index === 1) rankClass = "ranking-prata";
+                        else if (index === 2) rankClass = "ranking-bronze";
+
+                        // Cálculo correto da pontuação percentual
+                        const scorePercent = ((rank.pontuacao_final / (rank.total_questoes * 2)) * 100).toFixed(1);
+
+                        const newRow = `
+                            <tr class="fade-in-up ${rankClass}">
+                                <td>${index + 1}º</td>
+                                <td>${formatarData(rank.data_registro)}</td>
+                                <td class="col-rank-score">${scorePercent}%</td>
+                                <td class="col-acertos">${rank.acertos}/${rank.total_questoes}</td>
+                                <td class="col-rank-time">${rank.duracao_formatada}</td>
+                            </tr>
+                        `;
+                        tbodyRanking.innerHTML += newRow;
+                    });
+
+                    // Atualiza melhor score
+                    const melhorScore = rankingList[0];
+                    if (melhorScore) {
+                        const scorePercent = ((melhorScore.pontuacao_final / (melhorScore.total_questoes * 2)) * 100).toFixed(1);
+                        document.getElementById('melhor-score').textContent = `${scorePercent}%`;
+                        document.getElementById('trend-score').textContent = scorePercent >= 80 ? '⭐ Excelente!' : '📈 Continue assim!';
+                    }
+                }
+
+                // Atualizar timestamp
+                document.getElementById('timestamp-atualizacao').textContent = new Date().toLocaleTimeString();
+                document.getElementById('ultima-atualizacao').style.display = 'block';
+
+                NotificacaoSistema.mostrar('Dados atualizados com sucesso!', 'sucesso');
+
+            } catch (error) {
+                console.error("Erro ao carregar dashboard:", error);
+                tbodyStats.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--color-danger);">
+                    ❌ Erro de conexão! Verifique se o servidor está rodando em ${API_URL}
+                </td></tr>`;
+                tbodyRanking.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 30px; color: var(--color-danger);">
+                    ⚠️ Não foi possível carregar o ranking
+                </td></tr>`;
+                NotificacaoSistema.mostrar('Erro ao carregar dados do dashboard', 'erro');
+            } finally {
+                refreshBtn.style.display = 'none';
+                rankingSpinner.style.display = 'none';
+            }
+        }
+
+        function formatarData(dataString) {
+            const data = new Date(dataString);
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        // --- SISTEMA DE EXPORTAÇÃO ---
+        function exportarDados() {
+            const progresso = JSON.parse(localStorage.getItem('progresso_diario') || '{}');
+            const dados = {
+                progresso: progresso,
+                dataExportacao: new Date().toISOString(),
+                tipo: 'ConcursoMaster AI - Dados de Estudo',
+                versao: '3.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `concurcomaster_dados_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            NotificacaoSistema.mostrar('Dados exportados com sucesso!', 'sucesso');
+        }
+
+        // --- SISTEMA DE MODAL ---
+        function abrirModalEstatisticas() {
+            const modal = document.getElementById('modal-estatisticas');
+            const graficosContainer = document.getElementById('graficos-container');
+            
+            // Gerar conteúdo do modal
+            graficosContainer.innerHTML = `
+                <div style="margin-bottom: 30px;">
+                    <h3>📈 Análise de Desempenho Detalhada</h3>
+                    <div style="background: #f8f9fa; padding: 25px; border-radius: 10px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; color: var(--color-success);">🎯</div>
+                                <div style="font-size: 1.2em; font-weight: bold;" id="modal-acertos">0</div>
+                                <div style="color: var(--color-secondary);">Total de Acertos</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; color: var(--color-primary);">⏱️</div>
+                                <div style="font-size: 1.2em; font-weight: bold;" id="modal-tempo">0h</div>
+                                <div style="color: var(--color-secondary);">Tempo de Estudo</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; color: var(--color-warning);">📊</div>
+                                <div style="font-size: 1.2em; font-weight: bold;" id="modal-questoes">0</div>
+                                <div style="color: var(--color-secondary);">Questões Respondidas</div>
+                            </div>
+                        </div>
+                        
+                        <h4>🎯 Recomendações Personalizadas</h4>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid var(--color-primary);">
+                            <p>• Foque em <strong id="modal-foco">carregando...</strong> para melhorar seu desempenho</p>
+                            <p>• Pratique mais questões de <strong id="modal-pratica">carregando...</strong></p>
+                            <p>• Seu tempo médio por questão está <strong id="modal-tempo-status">carregando...</strong></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>📅 Evolução do Aprendizado</h3>
+                    <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center;">
+                        <p>📈 Gráficos de evolução temporal em desenvolvimento</p>
+                        <p>Em breve: Análise temporal do seu progresso</p>
+                    </div>
+                </div>
+            `;
+            
+            // Atualizar dados no modal
+            const totalAcertos = document.querySelector('.col-acertos')?.textContent || '0';
+            const totalQuestoes = document.querySelector('.col-total')?.textContent || '0';
+            const disciplinaDificil = document.getElementById('disciplina-dificil')?.textContent || 'carregando...';
+            
+            document.getElementById('modal-acertos').textContent = totalAcertos;
+            document.getElementById('modal-questoes').textContent = totalQuestoes;
+            document.getElementById('modal-foco').textContent = disciplinaDificil;
+            document.getElementById('modal-pratica').textContent = disciplinaDificil;
+            
+            modal.style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-estatisticas').style.display = 'none';
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal-estatisticas').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharModal();
+            }
+        });
+
+        // --- SISTEMA DE ALTERNÂNCIA DE VISUALIZAÇÃO ---
+        function alternarVisualizacao() {
+            visualizacaoCompacta = !visualizacaoCompacta;
+            
+            const elementos = [
+                '.evolucao-cards',
+                '#grafico-container',
+                '.stats-table',
+                '.ranking-table'
+            ];
+            
+            elementos.forEach(seletor => {
+                const elemento = document.querySelector(seletor);
+                if (elemento) {
+                    elemento.style.display = visualizacaoCompacta ? 'none' : '';
+                }
+            });
+            
+            NotificacaoSistema.mostrar(
+                visualizacaoCompacta ? 'Visualização compacta ativada' : 'Visualização completa ativada',
+                'info'
+            );
+        }
+
+        // Atualizar a cada 30 segundos
+        setInterval(carregarDashboardData, 30000);
+
+        // Carregar dados ao iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            NotificacaoSistema.mostrar('Dashboard carregado com sucesso!', 'sucesso', 3000);
+            
+            // Adicionar efeitos de hover dinâmicos
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
