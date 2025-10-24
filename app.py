@@ -3,7 +3,7 @@ from flask_cors import CORS
 import sqlalchemy as db
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
 # Conexão com banco
@@ -20,24 +20,19 @@ def conectar_banco():
 
 engine, metadata = conectar_banco()
 
-# ROTA PRINCIPAL DEVE VIR ANTES DAS ESPECÍFICAS
+# ROTA PRINCIPAL - SERVIR ARQUIVOS ESTÁTICOS
 @app.route("/")
-def serve_index():
-    return send_from_directory(".", "index.html")
+def index():
+    return app.send_static_file("index.html")
 
-# ROTA PARA SIMULADO SIMPLES
-@app.route("/simulado-simples.html")
-def serve_simulado_simples():
-    return send_from_directory(".", "simulado-simples.html")
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory('.', path)
 
-# API Routes - IMPORTANTE: vêm DEPOIS das rotas estáticas
+# API ROUTES
 @app.route("/api/health")
 def health():
-    db_status = "connected" if engine else "disconnected"
-    return jsonify({
-        "status": "healthy",
-        "database": db_status
-    })
+    return jsonify({"status": "healthy", "message": "ConcursoMaster AI Online"})
 
 @app.route("/api/materias")
 def materias():
@@ -92,16 +87,15 @@ def questao(disciplina):
             
             questoes = []
             for row in result:
-                questao_dict = dict(row._mapping)
                 questoes.append({
-                    'id': questao_dict.get('id'),
-                    'materia': questao_dict.get('disciplina'),
-                    'enunciado': questao_dict.get('enunciado'),
-                    'alternativa_a': questao_dict.get('alt_a'),
-                    'alternativa_b': questao_dict.get('alt_b'),
-                    'alternativa_c': questao_dict.get('alt_c'),
-                    'alternativa_d': questao_dict.get('alt_d'),
-                    'resposta_correta': questao_dict.get('gabarito')
+                    'id': row.id,
+                    'materia': row.disciplina,
+                    'enunciado': row.enunciado,
+                    'alternativa_a': row.alt_a,
+                    'alternativa_b': row.alt_b,
+                    'alternativa_c': row.alt_c,
+                    'alternativa_d': row.alt_d,
+                    'resposta_correta': row.gabarito
                 })
             
             return jsonify({
@@ -111,11 +105,6 @@ def questao(disciplina):
             })
     except Exception as e:
         return jsonify({"error": str(e)})
-
-# ROTA CURINGA DEVE SER A ÚLTIMA
-@app.route("/<path:path>")
-def serve_static(path):
-    return send_from_directory(".", path)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
