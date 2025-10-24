@@ -6,15 +6,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Servir arquivos estáticos (HTML, CSS, JS)
-@app.route("/")
-def serve_index():
-    return send_from_directory(".", "index.html")
-
-@app.route("/<path:path>")
-def serve_static(path):
-    return send_from_directory(".", path)
-
 # Conexão com banco
 def conectar_banco():
     try:
@@ -29,7 +20,17 @@ def conectar_banco():
 
 engine, metadata = conectar_banco()
 
-# API Routes
+# ROTA PRINCIPAL DEVE VIR ANTES DAS ESPECÍFICAS
+@app.route("/")
+def serve_index():
+    return send_from_directory(".", "index.html")
+
+# ROTA PARA SIMULADO SIMPLES
+@app.route("/simulado-simples.html")
+def serve_simulado_simples():
+    return send_from_directory(".", "simulado-simples.html")
+
+# API Routes - IMPORTANTE: vêm DEPOIS das rotas estáticas
 @app.route("/api/health")
 def health():
     db_status = "connected" if engine else "disconnected"
@@ -110,6 +111,11 @@ def questao(disciplina):
             })
     except Exception as e:
         return jsonify({"error": str(e)})
+
+# ROTA CURINGA DEVE SER A ÚLTIMA
+@app.route("/<path:path>")
+def serve_static(path):
+    return send_from_directory(".", path)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
