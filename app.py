@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, send_from_directory
 import os
+from flask import Flask, jsonify, send_from_directory
 
 app = Flask(__name__)
 
@@ -17,4 +17,5 @@ def serve_static(path):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
+    print(f"🚀 INICIANDO NA PORTA: {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
