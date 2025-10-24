@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConcursoMaster - Simulado Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .questao { border: 1px solid #ccc; padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .alternativa { margin: 5px 0; padding: 10px; border: 1px solid #ddd; cursor: pointer; }
+        .alternativa:hover { background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>🎯 ConcursoMaster - Simulado Simples</h1>
+    <div id="questoes"></div>
+    
+    <script>
+        async function carregarQuestoes() {
+            try {
+                const response = await fetch('/api/questoes/Direito Administrativo?limit=5');
+                const data = await response.json();
+                
+                let html = '';
+                data.questoes.forEach((questao, index) => {
+                    html += `
+                        <div class="questao">
+                            <h3>Questão ${index + 1}: ${questao.materia}</h3>
+                            <p>${questao.enunciado}</p>
+                            <div class="alternativa" onclick="alert('Resposta: ${questao.resposta_correta}')">A) ${questao.alternativa_a}</div>
+                            <div class="alternativa" onclick="alert('Resposta: ${questao.resposta_correta}')">B) ${questao.alternativa_b}</div>
+                            <div class="alternativa" onclick="alert('Resposta: ${questao.resposta_correta}')">C) ${questao.alternativa_c}</div>
+                            <div class="alternativa" onclick="alert('Resposta: ${questao.resposta_correta}')">D) ${questao.alternativa_d}</div>
+                            <p><small>Clique em uma alternativa para ver a resposta correta</small></p>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('questoes').innerHTML = html;
+            } catch (error) {
+                document.getElementById('questoes').innerHTML = '<p>Erro ao carregar questões. Verifique o console.</p>';
+                console.error(error);
+            }
+        }
+        
+        carregarQuestoes();
+    </script>
+</body>
+</html>
