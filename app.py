@@ -2,139 +2,114 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import sqlalchemy as db
 import os
-import logging
 
-# Configuração para produção
 app = Flask(__name__)
 CORS(app)
 
-# Configurar logging
-if __name__ != '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
-
 # Conexão com banco
-def get_db_connection():
+def conectar_banco():
     try:
         engine = db.create_engine("sqlite:///concurso.db")
         metadata = db.MetaData()
         metadata.reflect(bind=engine)
-        app.logger.info("✅ Banco de dados conectado")
+        print("✅ Banco de dados conectado")
         return engine, metadata
     except Exception as e:
-        app.logger.error(f"❌ Erro no banco: {e}")
+        print(f"❌ Erro no banco: {e}")
         return None, None
 
-engine, metadata = get_db_connection()
+engine, metadata = conectar_banco()
 
 @app.route("/")
-def root():
+def home():
     return jsonify({
         "message": "ConcursoMaster AI Premium - ONLINE",
         "version": "2.0",
-        "status": "success",
-        "questoes_total": 295
+        "status": "success"
     })
 
 @app.route("/health")
-def health_check():
+def health():
     db_status = "connected" if engine else "disconnected"
     return jsonify({
         "status": "healthy",
-        "database": db_status,
-        "service": "ConcursoMaster API"
+        "database": db_status
     })
 
 @app.route("/materias")
-def get_materias():
+def materias():
     if not engine:
         return jsonify({"materias": []})
     
     try:
         with engine.connect() as conn:
-            questoes_table = metadata.tables['questoes']
-            query = db.select([questoes_table.c.disciplina]).distinct()
+            tabela = metadata.tables['questoes']
+            query = db.select([tabela.c.disciplina]).distinct()
             result = conn.execute(query)
-            materias = [row[0] for row in result]
-            return jsonify({"materias": materias})
+            materias_lista = [row[0] for row in result]
+            return jsonify({"materias": materias_lista})
     except Exception as e:
-        app.logger.error(f"Erro em /materias: {e}")
-        return jsonify({"materias": []})
+        return jsonify({"materias": [], "error": str(e)})
 
 @app.route("/dashboard-data")
-def dashboard_data():
+def dashboard():
     if not engine:
         return jsonify({"error": "Banco indisponível"})
     
     try:
         with engine.connect() as conn:
-            questoes_table = metadata.tables['questoes']
+            tabela = metadata.tables['questoes']
             
             # Total de questões
-            total_query = db.select([db.func.count()]).select_from(questoes_table)
-            total_questoes = conn.execute(total_query).scalar()
+            total = conn.execute(db.select([db.func.count()]).select_from(tabela)).scalar()
             
-            # Questões por disciplina
-            disciplinas_query = db.select([
-                questoes_table.c.disciplina,
-                db.func.count()
-            ]).group_by(questoes_table.c.disciplina)
-            disciplinas_result = conn.execute(disciplinas_query)
-            disciplinas_count = {row[0]: row[1] for row in disciplinas_result}
+            # Por disciplina
+            query = db.select([tabela.c.disciplina, db.func.count()]).group_by(tabela.c.disciplina)
+            result = conn.execute(query)
+            por_materia = {row[0]: row[1] for row in result}
             
             return jsonify({
-                "total_questoes": total_questoes,
-                "questoes_por_materia": disciplinas_count
+                "total_questoes": total,
+                "questoes_por_materia": por_materia
             })
     except Exception as e:
-        app.logger.error(f"Erro em /dashboard-data: {e}")
         return jsonify({"error": str(e)})
 
 @app.route("/questoes/<disciplina>")
-def get_questoes(disciplina):
+def questao(disciplina):
     if not engine:
-        return jsonify({"error": "Banco indisponível"}), 500
+        return jsonify({"error": "Banco indisponível"})
     
     try:
         limit = request.args.get('limit', 10, type=int)
         with engine.connect() as conn:
-            questoes_table = metadata.tables['questoes']
-            query = db.select(questoes_table).where(
-                questoes_table.c.disciplina == disciplina
-            ).limit(limit)
+            tabela = metadata.tables['questoes']
+            query = db.select(tabela).where(tabela.c.disciplina == disciplina).limit(limit)
             result = conn.execute(query)
             
-            # Converter para formato padronizado
-            questões = []
+            questoes = []
             for row in result:
                 questao_dict = dict(row._mapping)
-                questao_formatada = {
+                questoes.append({
                     'id': questao_dict.get('id'),
                     'materia': questao_dict.get('disciplina'),
-                    'assunto': questao_dict.get('assunto'),
                     'enunciado': questao_dict.get('enunciado'),
                     'alternativa_a': questao_dict.get('alt_a'),
                     'alternativa_b': questao_dict.get('alt_b'),
                     'alternativa_c': questao_dict.get('alt_c'),
                     'alternativa_d': questao_dict.get('alt_d'),
-                    'alternativa_e': '',
-                    'resposta_correta': questao_dict.get('gabarito'),
-                    'explicacao': f"Dificuldade: {questao_dict.get('nivel', 'N/A')}. {questao_dict.get('dica_interpretacao', '')}"
-                }
-                questões.append(questao_formatada)
+                    'resposta_correta': questao_dict.get('gabarito')
+                })
             
             return jsonify({
                 "disciplina": disciplina,
-                "quantidade": len(questões),
-                "questoes": questões
+                "quantidade": len(questoes),
+                "questoes": questoes
             })
     except Exception as e:
-        app.logger.error(f"Erro em /questoes: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)})
 
-# Inicialização para desenvolvimento
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    app.logger.info(f"🚀 ConcursoMaster Flask - Porta: {port}")
+    print(f"🚀 Iniciando servidor na porta {port}")
     app.run(host="0.0.0.0", port=port, debug=False)
