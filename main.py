@@ -16,28 +16,28 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title=\"ConcursoMaster AI Premium\",
-    description=\"Sistema inteligente de estudos para concursos públicos\",
-    version=\"2.0\"
+    title="ConcursoMaster AI Premium",
+    description="Sistema inteligente de estudos para concursos públicos",
+    version="2.0"
 )
 
 # Configuração CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[\"*\"],
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=[\"*\"],
-    allow_headers=[\"*\"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Conexão com o banco de dados
 try:
-    engine = db.create_engine(\"sqlite:///concurso.db\")
+    engine = db.create_engine("sqlite:///concurso.db")
     metadata = db.MetaData()
     metadata.reflect(bind=engine)
-    logger.info(\"✅ Banco de dados conectado com sucesso\")
+    logger.info("✅ Banco de dados conectado com sucesso")
 except Exception as e:
-    logger.error(f\"❌ Erro ao conectar com banco de dados: {e}\")
+    logger.error(f"❌ Erro ao conectar com banco de dados: {e}")
     engine = None
 
 # Modelos Pydantic
@@ -58,25 +58,25 @@ class SimuladoRequest(BaseModel):
     quantidade: int = 10
 
 # Rotas básicas
-@app.get(\"/\")
+@app.get("/")
 async def root():
-    return {\"message\": \"ConcursoMaster AI Premium - Sistema Online\", \"version\": \"2.0.0\"}
+    return {"message": "ConcursoMaster AI Premium - Sistema Online", "version": "2.0.0"}
 
-@app.get(\"/health\")
+@app.get("/health")
 async def health_check():
-    db_status = \"connected\" if engine else \"disconnected\"
+    db_status = "connected" if engine else "disconnected"
     return {
-        \"status\": \"healthy\", 
-        \"service\": \"ConcursoMaster AI\",
-        \"database\": db_status,
-        \"gemini_ai\": \"unavailable\",
-        \"timestamp\": datetime.now().isoformat()
+        "status": "healthy", 
+        "service": "ConcursoMaster AI",
+        "database": db_status,
+        "gemini_ai": "unavailable",
+        "timestamp": datetime.now().isoformat()
     }
 
-@app.get(\"/questoes/{materia}\")
+@app.get("/questoes/{materia}")
 async def get_questoes(materia: str, limit: int = 10):
     if not engine:
-        raise HTTPException(status_code=500, detail=\"Banco de dados não disponível\")
+        raise HTTPException(status_code=500, detail="Banco de dados não disponível")
     
     try:
         with engine.connect() as conn:
@@ -86,18 +86,18 @@ async def get_questoes(materia: str, limit: int = 10):
             questões = [dict(row._mapping) for row in result]
             
             return {
-                \"materia\": materia,
-                \"quantidade\": len(questões),
-                \"questoes\": questões,
-                \"gemini_available\": GEMINI_AVAILABLE
+                "materia": materia,
+                "quantidade": len(questões),
+                "questoes": questões,
+                "gemini_available": GEMINI_AVAILABLE
             }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f\"Erro ao buscar questões: {str(e)}\")
+        raise HTTPException(status_code=500, detail=f"Erro ao buscar questões: {str(e)}")
 
-@app.get(\"/dashboard-data\")
+@app.get("/dashboard-data")
 async def get_dashboard_data():
     if not engine:
-        return {\"error\": \"Banco de dados não disponível\"}
+        return {"error": "Banco de dados não disponível"}
     
     try:
         with engine.connect() as conn:
@@ -113,18 +113,18 @@ async def get_dashboard_data():
             total_questoes = total_result.scalar()
             
             return {
-                \"total_questoes\": total_questoes,
-                \"questoes_por_materia\": materias_count,
-                \"gemini_available\": GEMINI_AVAILABLE,
-                \"timestamp\": datetime.now().isoformat()
+                "total_questoes": total_questoes,
+                "questoes_por_materia": materias_count,
+                "gemini_available": GEMINI_AVAILABLE,
+                "timestamp": datetime.now().isoformat()
             }
     except Exception as e:
-        return {\"error\": f\"Erro ao buscar dados do dashboard: {str(e)}\"}
+        return {"error": f"Erro ao buscar dados do dashboard: {str(e)}"}
 
-@app.get(\"/materias\")
+@app.get("/materias")
 async def get_materias():
     if not engine:
-        return {\"materias\": []}
+        return {"materias": []}
     
     try:
         with engine.connect() as conn:
@@ -133,31 +133,31 @@ async def get_materias():
             result = conn.execute(query)
             materias = [row[0] for row in result]
             
-            return {\"materias\": materias}
+            return {"materias": materias}
     except Exception as e:
-        return {\"materias\": []}
+        return {"materias": []}
 
-if __name__ == \"__main__\":
+if __name__ == "__main__":
     import uvicorn
     import os
     
-    print(\"\\n\" + \"=\"*60)
-    print(\"🚀 CONCURSOMASTER AI PREMIUM v2.0 - SERVIDOR INICIANDO\")
-    print(\"=\"*60)
-    print(\"🔧 Google Gemini AI: ❌ DESATIVADO (modo simplificado)\")
+    print("\n" + "="*60)
+    print("🚀 CONCURSOMASTER AI PREMIUM v2.0 - SERVIDOR INICIANDO")
+    print("="*60)
+    print("🔧 Google Gemini AI: ❌ DESATIVADO (modo simplificado)")
     
     # CONFIGURAÇÕES PARA PRODUÇÃO
-    host = \"0.0.0.0\"
-    port = int(os.environ.get(\"PORT\", 8000))
+    host = "0.0.0.0"
+    port = int(os.environ.get("PORT", 8000))
     
-    print(f\"🌐 Servidor rodando em: http://{host}:{port}\")
-    print(\"📚 API Documentation: /docs\")
-    print(\"🔍 Health Check: /health\")
-    print(\"=\"*60 + \"\\n\")
+    print(f"🌐 Servidor rodando em: http://{host}:{port}")
+    print("📚 API Documentation: /docs")
+    print("🔍 Health Check: /health")
+    print("="*60 + "\n")
     
     uvicorn.run(
         app, 
         host=host,
         port=port,
-        log_level=\"info\"
+        log_level="info"
     )
