@@ -1,4 +1,2 @@
 flask==2.3.3
-flask-cors==4.0.0
-sqlalchemy==1.4.46
 gunicorn==21.2.0
